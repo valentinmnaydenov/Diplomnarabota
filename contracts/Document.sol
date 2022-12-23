@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+ // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -30,11 +30,8 @@ contract Document is ReentrancyGuard {
     }
 
     enum Category {
-        AM,
-        A1,
-        A2,
-        B1,
-        BE,
+        A,
+        B,
         C,
         D
     }
@@ -67,18 +64,18 @@ contract Document is ReentrancyGuard {
         string name;
         Status status;
         uint256 id;
-        string phone;
-        string email;
   }
  
  constructor(address _docItemAddress) {
     owner = payable(msg.sender);
     docItemContract = DocItem(_docItemAddress);
   }
+
   modifier onlyOwner() {
     require(msg.sender == owner, "Only the owner can perform this action");
     _;
 }
+
     mapping(uint256 => IdCard) public idcards;
     mapping(uint256 => CarLicense) public carlicenses;
     mapping(uint256 => Passport) public passports;
@@ -101,7 +98,7 @@ contract Document is ReentrancyGuard {
 }
 
 
- event IdentityCardCreated(uint256 idCardId, IdCard idCard);
+event IdentityCardCreated(uint256 idCardId, IdCard idCard);
 
 function createIdentityCard(uint256 applicationId, IdCard memory idCard) public onlyOwner {
     require(applicationStatus[applicationId] == Status.Approved, "The application must be in the Approved status");

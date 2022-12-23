@@ -75,7 +75,10 @@ contract Document is ReentrancyGuard {
     owner = payable(msg.sender);
     docItemContract = DocItem(_docItemAddress);
   }
-
+  modifier onlyOwner() {
+    require(msg.sender == owner, "Only the owner can perform this action");
+    _;
+}
     mapping(uint256 => IdCard) public idcards;
     mapping(uint256 => CarLicense) public carlicenses;
     mapping(uint256 => Passport) public passports;
@@ -98,23 +101,33 @@ contract Document is ReentrancyGuard {
 }
 
 
-function createIdentityCard(uint256 applicationId,   IdCard memory idCard) public {
+ event IdentityCardCreated(uint256 idCardId, IdCard idCard);
+
+function createIdentityCard(uint256 applicationId, IdCard memory idCard) public onlyOwner {
     require(applicationStatus[applicationId] == Status.Approved, "The application must be in the Approved status");
-     uint256 idCardId = idCardCounter;
-        idcards[idCardId] = idCard;
-        idCardCounter++;    
+    uint256 idCardId = idCardCounter;
+    idcards[idCardId] = idCard;
+    idCardCounter++;
+    emit IdentityCardCreated(idCardId, idCard);
 }
 
-function createPassport(uint256 applicationId, Passport memory passport) public {
+event PassportCreated(uint256 passportid, Passport passport);
+
+ function createPassport(uint256 applicationId, Passport memory passport) public onlyOwner {
     require(applicationStatus[applicationId] == Status.Approved, "The application must be in the Approved status");
-     uint256  passportId = idpassportCounter;
-        passports[passportId] = passport;
-        idpassportCounter++;   
+    uint256  passportId = idpassportCounter;
+    passports[passportId] = passport;
+    idpassportCounter++;  
+    emit PassportCreated(passportId, passport);
 }
-function createCarlicense(uint256 applicationId, CarLicense memory carlicense) public {
+
+event CreatedCarLicense(uint256 aplicationid, CarLicense carlicense);
+
+function createCarlicense(uint256 applicationId, CarLicense memory carlicense) public onlyOwner {
     require(applicationStatus[applicationId] == Status.Approved, "The application must be in the Approved status");
      uint256  carlicenseId = idcarlicenseCounter;
         carlicenses[carlicenseId] = carlicense;
         idcarlicenseCounter++;   
+        emit CreatedCarLicense(carlicenseId, carlicense);
 }
 }

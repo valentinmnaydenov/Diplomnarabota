@@ -93,9 +93,26 @@ contract Document is ReentrancyGuard {
   mapping(uint256 => Status) public applicationStatus;
   mapping(uint256 => bool) public nfts;
   mapping(address => Role) public roles;
-  mapping(address => bool) public  theroles;
+  mapping(address => bool) public theroles;
+  mapping(uint256 => bool) public inUseEgn;
+  mapping(uint256 => bool) public applicationFormsExist;
 
   uint256 nextAvailableId = 0;
+
+  event CreatedApplicationForm(uint256 idApplicationId, ApplicationForm applicationForm);
+
+  function createApplicationForm(ApplicationForm memory applicationForm) public {
+    require(theroles[msg.sender], 'Sender does not have the necessary role');
+    require(
+      !applicationFormsExist[applicationForm.id],
+      'An application with this id already exists'
+    );
+    require(!inUseEgn[applicationForm.egn], 'EGN is already in use');
+    applicationFormsExist[applicationForm.id] = true;
+    applicationForms[applicationForm.id] = applicationForm;
+    inUseEgn[applicationForm.egn] = true;
+    emit CreatedApplicationForm(applicationForm.id, applicationForm);
+  }
 
   event Approved(uint256 _applicationId);
   event Rejected(uint256 _applicationId);
@@ -105,6 +122,7 @@ contract Document is ReentrancyGuard {
     require(roles[msg.sender] == Role.Admin, 'Only admins can approve applications');
     require(applicationForms[_applicationId].status == Status.Pending, 'Invalid status');
     applicationForms[_applicationId].status = Status.Approved;
+    docItemContract.mintItem(msg.sender, 'my-token-uri');
     emit Approved(_applicationId);
   }
 
@@ -121,16 +139,4 @@ contract Document is ReentrancyGuard {
     applicationForms[_applicationId].status = Status.Pending;
     emit Pending(_applicationId);
   }
-
-  event CreatedApplicationForm(uint256 idApplicationId, ApplicationForm applicationForm);
-
-  function createApplicationForm(ApplicationForm memory applicationForm) public {
-    require(theroles[msg.sender], 'Sender does not have the necessary role');
-    uint256 id = nextAvailableId;
-    nextAvailableId++;
-    applicationForms[id] = applicationForm;
-    docItemContract.mintItem(msg.sender, 'my-token-uri');
-    emit CreatedApplicationForm(id, applicationForm);
-  }
-
 }

@@ -5,7 +5,7 @@ import Home from '../pages/Home';
 import Styleguide from '../pages/Styleguide';
 import Documents from '../pages/Documents';
 import useProvider from '../hooks/useProvider';
-import SDK from '../sdk/artifacts/index';
+import SDK from '../sdk/index';
 
 //import Documenttype from '../pages/Documenttype'
 

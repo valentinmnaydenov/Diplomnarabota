@@ -1,161 +1,145 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
+import { NFTStorage } from 'nft.storage';
 import { Link } from 'react-router-dom';
 
-function Styleguide() {
+import Documents from './Documents';
+
+const ApplicationForm = ({ sdk }) => {
+  const [formState, setFormState] = useState({
+    nftName: '',
+    egn: '',
+    image: null, // add image state
+  });
+
+  console.log();
+  const [formErrors, setFormErrors] = useState({});
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [mintSuccess, setMintSuccess] = useState(false);
+  const imageRef = useRef(null);
+
+  const handleInputChange = e => {
+    if (e.target.name === 'nftImage') {
+      setFormState({ ...formState, image: e.target.files[0] });
+    } else {
+      setFormState({ ...formState, [e.target.name]: e.target.value });
+    }
+  };
+
+  const handleFormValidation = () => {
+    const { nftName, egn } = formState;
+    if (nftName !== '' && egn !== '' && formState.image) {
+      setHasError(false);
+      return true;
+    } else {
+      setHasError(true);
+      return false;
+    }
+  };
+  const handleButtonMint = async () => {
+    setIsLoading(true);
+    setErrorMessage('');
+    if (!handleFormValidation()) {
+      setIsLoading(false);
+      setMintSuccess(true);
+      return;
+    }
+    try {
+      const { nftName, egn } = formState;
+      const imageFile = document.querySelector("input[name='nftImage']").files[0];
+      const errors = {};
+      if (!nftName) {
+        errors.nftName = 'Name is required';
+      }
+      if (!egn) {
+        errors.egn = 'EGN is required';
+      }
+      if (!imageFile) {
+        errors.nftImage = 'Image is required';
+      }
+      if (Object.values(errors).some(Boolean)) {
+        setFormErrors(errors);
+        setIsLoading(false);
+        return;
+      }
+
+      const storeNFT = async (name, imageFile) => {
+        const client = new NFTStorage({ token: process.env.REACT_APP_NFT_STORAGE_KEY });
+        const metadata = await client.store({
+          name,
+          image: imageFile,
+          description: '',
+        });
+        return metadata;
+      };
+      const metadata = await storeNFT(nftName, imageFile);
+      const tokenURI = metadata.cid;
+      const collectionID = metadata.collectionId;
+      await sdk.createApplicationForm(nftName, egn, tokenURI, collectionID);
+      setIsLoading(false);
+      setMintSuccess(true);
+    } catch (errors) {
+      console.log('Error:', errors);
+      setHasError(true);
+      setErrorMessage(errors.message);
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="container my-5">
-      <h1>Styleguide</h1>
+      {mintSuccess ? <Link to="/Documents"> Documents</Link> : null}
+      <h1>Application Form</h1>
 
-      <h2 className="text-display mt-10">Colors</h2>
-      <hr className="mt-3 mb-6" />
-
-      <h3 className="text-headline mb-4">Main</h3>
-
-      <div className="row mb-4">
-        <div className="col-12 col-md-2">
-          <div
-            style={{ height: '64px', lineHeight: '64px', borderRadius: '2px' }}
-            className="mb-2 bg-primary text-white text-center"
-          >
-            Primary
-          </div>
+      <form>
+        <div className={`form-group ${formErrors.nftName ? 'has-error' : ''}`}>
+          <label htmlFor="nftName">Name</label>
+          <input
+            type="text"
+            className={`form-control ${formErrors.nftName ? 'is-invalid' : ''}`}
+            id="nftName"
+            name="nftName"
+            onChange={handleInputChange}
+          />
+          {formErrors.nftName && <div className="invalid-feedback">{formErrors.nftName}</div>}
         </div>
-        <div className="col-12 col-md-2">
-          <div
-            style={{ height: '64px', lineHeight: '64px', borderRadius: '2px' }}
-            className="mb-2 bg-secondary text-white text-center"
-          >
-            Secondary
-          </div>
+
+        <div className={`form-group ${formErrors.egn ? 'has-error' : ''}`}>
+          <label htmlFor="egn">EGN</label>
+          <input
+            type="text"
+            className={`form-control ${formErrors.egn ? 'is-invalid' : ''}`}
+            id="egn"
+            name="egn"
+            onChange={handleInputChange}
+          />
+          {formErrors.egn && <div className="invalid-feedback">{formErrors.egn}</div>}
         </div>
-      </div>
 
-      <h3 className="text-headline mb-4">System</h3>
-
-      <div className="row mb-4">
-        <div className="col-12 col-md-2">
-          <div
-            style={{ height: '64px', lineHeight: '64px', borderRadius: '2px' }}
-            className="mb-2 bg-success text-white text-center"
-          >
-            Success
-          </div>
+        <div className={`form-group ${formErrors.nftImage ? 'has-error' : ''}`}>
+          <label htmlFor="nftImage">Image</label>
+          <input
+            type="file"
+            className={`form-control ${formErrors.nftImage ? 'is-invalid' : ''}`}
+            id="nftImage"
+            name="nftImage"
+            ref={imageRef}
+            onChange={handleInputChange}
+          />
+          {formErrors.nftImage && <div className="invalid-feedback">{formErrors.nftImage}</div>}
         </div>
-        <div className="col-12 col-md-2">
-          <div
-            style={{ height: '64px', lineHeight: '64px', borderRadius: '2px' }}
-            className="mb-2 bg-danger text-white text-center"
-          >
-            Danger
-          </div>
-        </div>
-        <div className="col-12 col-md-2">
-          <div
-            style={{ height: '64px', lineHeight: '64px', borderRadius: '2px' }}
-            className="mb-2 bg-warning text-white text-center "
-          >
-            Warning
-          </div>
-        </div>
-        <div className="col-12 col-md-2">
-          <div
-            style={{ height: '64px', lineHeight: '64px', borderRadius: '2px' }}
-            className="mb-2 bg-info text-white text-center"
-          >
-            Info
-          </div>
-        </div>
-      </div>
-
-      <h2 className="text-display mt-10">Typography</h2>
-      <hr className="mt-3 mb-6" />
-
-      <div className="mb-4">
-        <div className="row">
-          <div className="col-md-5">
-            <code>.heading-large</code>
-            <h2 className="heading-large mt-3">The quick brown fox jumps over the lazy dog</h2>
-          </div>
-        </div>
-      </div>
-
-      <hr className="mt-6 mb-6" />
-
-      <div className="mb-4">
-        <div className="row">
-          <div className="col-md-5">
-            <code>.heading-medium</code>
-            <h2 className="heading-medium mt-3">The quick brown fox jumps over the lazy dog</h2>
-          </div>
-        </div>
-      </div>
-
-      <hr className="mt-6 mb-6" />
-
-      <div className="mb-4">
-        <div className="row">
-          <div className="col-md-5">
-            <code>.heading-small</code>
-            <h2 className="heading-small mt-3">The quick brown fox jumps over the lazy dog</h2>
-          </div>
-        </div>
-      </div>
-
-      <div className="mb-4">
-        <div className="row">
-          <div className="col-md-6">
-            <code>.text-lead</code>
-            <p className="text-lead mt-3">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-              incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-              exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-              dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-              Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt
-              mollit anim id est laborum.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <hr className="mt-6 mb-6" />
-
-      <div className="mb-4">
-        <div className="row">
-          <div className="col-md-6">
-            <code>.text-main</code>
-            <p className="text-main mt-3">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-              incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-              exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-              dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-              Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt
-              mollit anim id est laborum.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <hr className="mt-6 mb-6" />
-
-      <div className="mb-4">
-        <div className="row">
-          <div className="col-md-6">
-            <code>.text-small</code>
-            <p className="text-small mt-3">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-              incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-              exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-              dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-              Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt
-              mollit anim id est laborum.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <Link to="/">Back</Link>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={handleButtonMint}
+          disabled={Object.values(formErrors).some(Boolean) || isLoading}
+        >
+          Mint
+        </button>
+      </form>
     </div>
   );
-}
+};
 
-export default Styleguide;
+export default ApplicationForm;

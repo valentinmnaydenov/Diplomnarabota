@@ -10,10 +10,12 @@ contract Document is ReentrancyGuard {
   address payable public owner;
   DocItem private immutable docItemContract;
 
-  uint256 nextAvailableId = 0;
+  enum Role {
+    Admin,
+    User
+  }
 
   enum Status {
-    Submitted,
     Approved,
     Pending,
     Rejected
@@ -70,11 +72,13 @@ contract Document is ReentrancyGuard {
     Status status;
     uint256 id;
     string ipfsLink;
+    uint256 egn;
+    address user;
   }
 
   constructor(address _docItemAddress) {
-    owner = payable(msg.sender);
     docItemContract = DocItem(_docItemAddress);
+    roles[msg.sender] = Role.Admin;
   }
 
   modifier onlyOwner() {
@@ -88,69 +92,51 @@ contract Document is ReentrancyGuard {
   mapping(uint256 => ApplicationForm) public applicationForms;
   mapping(uint256 => Status) public applicationStatus;
   mapping(uint256 => bool) public nfts;
+  mapping(address => Role) public roles;
+  mapping(address => bool) public theroles;
+  mapping(uint256 => bool) public inUseEgn;
+  mapping(uint256 => bool) public applicationFormsExist;
 
-  uint256 public idCardCounter = 0;
-  uint256 public idpassportCounter = 0;
-  uint256 public idcarlicenseCounter = 0;
+  uint256 nextAvailableId = 0;
 
-  function mint(address _to, uint256 _id) public {
-    require(!nfts[_id], 'NFT with this ID already exists');
-    nfts[_id] = true;
-  }
+  event CreatedApplicationForm(uint256 idApplicationId, ApplicationForm applicationForm);
 
-  //The mint function checks if an NFT with the given ID already exists. It does this by checking the value of nfts[_id].
-  //If nfts[_id] is true, it means that an NFT with this ID already exists and the function will throw an error.
-
-  event Mint(address indexed _to, uint256 indexed _id);
-
-  function mintNFT(ApplicationForm memory applicationForm) public {
-    require(applicationForm.status == Status.Approved, 'Invalid approval');
-
-    uint256 id = nextAvailableId;
-    mint(msg.sender, id);
-    applicationForms[id].ipfsLink = applicationForm.ipfsLink;
-    nextAvailableId++; //nextAvailableId variable to keep track of the next available ID for minting new NFTs.
-    emit Mint(msg.sender, id);
-  }
-
-  // function is responsible for minting a new NFT with the given ID and metadata taken from the ApplicationForm struct.
-
-  event IdentityCardCreated(uint256 idCardId, IdCard idCard);
-
-  function createIdentityCard(uint256 applicationId, IdCard memory idCard) public onlyOwner {
+  function createApplicationForm(ApplicationForm memory applicationForm) public {
+    require(theroles[msg.sender], 'Sender does not have the necessary role');
     require(
-      applicationStatus[applicationId] == Status.Approved,
-      'The application must be in the Approved status'
+      !applicationFormsExist[applicationForm.id],
+      'An application with this id already exists'
     );
-    uint256 idCardId = idCardCounter;
-    idcards[idCardId] = idCard;
-    idCardCounter++;
-    emit IdentityCardCreated(idCardId, idCard);
+    require(!inUseEgn[applicationForm.egn], 'EGN is already in use');
+    applicationFormsExist[applicationForm.id] = true;
+    applicationForms[applicationForm.id] = applicationForm;
+    inUseEgn[applicationForm.egn] = true;
+    emit CreatedApplicationForm(applicationForm.id, applicationForm);
   }
 
-  event PassportCreated(uint256 passportid, Passport passport);
+  event Approved(uint256 _applicationId);
+  event Rejected(uint256 _applicationId);
+  event Pending(uint256 _applicationId);
 
-  function createPassport(uint256 applicationId, Passport memory passport) public onlyOwner {
-    require(
-      applicationStatus[applicationId] == Status.Approved,
-      'The application must be in the Approved status'
-    );
-    uint256 passportId = idpassportCounter;
-    passports[passportId] = passport;
-    idpassportCounter++;
-    emit PassportCreated(passportId, passport);
+  function approveApplication(uint256 _applicationId) public {
+    require(roles[msg.sender] == Role.Admin, 'Only admins can approve applications');
+    require(applicationForms[_applicationId].status == Status.Pending, 'Invalid status');
+    applicationForms[_applicationId].status = Status.Approved;
+    docItemContract.mintItem(msg.sender, 'my-token-uri');
+    emit Approved(_applicationId);
   }
 
-  event CreatedCarLicense(uint256 aplicationid, CarLicense carlicense);
+  function rejectApplication(uint256 _applicationId) public {
+    require(roles[msg.sender] == Role.Admin, 'Only admins can reject applications');
+    require(applicationForms[_applicationId].status == Status.Pending, 'Invalid status');
+    applicationForms[_applicationId].status = Status.Rejected;
+    emit Rejected(_applicationId);
+  }
 
-  function createCarlicense(uint256 applicationId, CarLicense memory carlicense) public onlyOwner {
-    require(
-      applicationStatus[applicationId] == Status.Approved,
-      'The application must be in the Approved status'
-    );
-    uint256 carlicenseId = idcarlicenseCounter;
-    carlicenses[carlicenseId] = carlicense;
-    idcarlicenseCounter++;
-    emit CreatedCarLicense(carlicenseId, carlicense);
+  function pendingApplication(uint256 _applicationId) public {
+    require(roles[msg.sender] == Role.Admin, 'Only admins can mark applications as pending');
+    require(applicationForms[_applicationId].status != Status.Pending, 'Invalid status');
+    applicationForms[_applicationId].status = Status.Pending;
+    emit Pending(_applicationId);
   }
 }

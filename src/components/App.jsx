@@ -1,17 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 import Home from '../pages/Home';
-import Mint from '../pages/Mint';
-import Profile from '../pages/Profile';
-import Collection from '../pages/Collection';
 import Styleguide from '../pages/Styleguide';
-import Deposit from '../pages/Deposit';
+import Documents from '../pages/Documents';
+import useProvider from '../hooks/useProvider';
+import SDK from '../sdk/artifacts/index';
+
+//import Documenttype from '../pages/Documenttype'
 
 import Header from './layout/Header';
 import Footer from './layout/Footer';
 
 function App() {
+  const provider = useProvider();
+  const [sdk, setSdk] = useState();
+  useEffect(() => {
+    if (provider) {
+      const _sdk = new SDK(provider);
+      _sdk.initContracts();
+      setSdk(_sdk);
+      console.log(_sdk);
+    }
+  }, [provider]);
   return (
     <BrowserRouter>
       <div className="wrapper">
@@ -19,13 +30,8 @@ function App() {
         <div className="main">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/deposit" element={<Deposit />} />
-            <Route path="styleguide" element={<Styleguide />} />
-            
-            <Route path="mint" element={<Mint />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="collection" element={<Collection />} />
-
+            <Route path="/" element={<Documents />} />
+            <Route path="styleguide" element={<Styleguide sdk={sdk} />} />
           </Routes>
         </div>
         <Footer />

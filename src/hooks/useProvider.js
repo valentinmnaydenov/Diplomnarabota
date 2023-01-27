@@ -7,13 +7,12 @@ const useProvider = () => {
 
   useEffect(() => {
     const getProviderData = async () => {
-      const providerOptions = {
-        /* See Provider Options Section */
-      };
+      const providerOptions = {};
 
       const web3Modal = new Web3Modal({
         network: 'sepolia', // optional
         cacheProvider: true, // optional
+
         providerOptions, // required
       });
 

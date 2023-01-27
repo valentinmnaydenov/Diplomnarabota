@@ -5,8 +5,8 @@ function Footer() {
     <div className="footer">
       <p className="text-center">
         Created with 💜 by{' '}
-        <a target="_blank" rel="noreferrer" href="https://github.com/RAMTO">
-          RAMTO
+        <a target="_blank" rel="noreferrer" href=" https://github.com/valentinmnaydenov">
+          Valio
         </a>
       </p>
     </div>

@@ -9,21 +9,23 @@ class SDK {
     this.provider = _provider;
     this.signer = _provider.signer;
   }
+
   async initContracts() {
     const documentContract = new ethers.Contract(
-      process.env.REACT_APP_ADDRESS_MARKETPLACE,
+      process.env.REACT_APP_ADDRESS_DOCUMENT,
       documentJSON.abi,
       this.signer,
     );
-    console.log(documentContract);
+
     const docItemContract = new ethers.Contract(
-      process.env.REACT_APP_ADDRESS_MARKETITEM,
+      process.env.REACT_APP_ADDRESS_DOCUMENT_ITEM,
       docItemJSON.abi,
       this.signer,
     );
 
     this.documentContract = documentContract;
     this.docItemContract = docItemContract;
+
     const address = await this.signer.getAddress();
     this.currentUser = address;
   }
@@ -34,6 +36,7 @@ class SDK {
 
     return tx;
   }
+
   async transfer(from, to, tokenId) {
     const tx = await this.docItemContract.transfer(from, to, tokenId);
     await tx.wait();
@@ -75,11 +78,13 @@ class SDK {
     await tx.wait();
     return tx;
   }
+
   async rejectApplicationForm(formId) {
     const tx = await this.documentContract.rejectApplicationForm(formId);
     await tx.wait();
     return tx;
   }
+
   async getApplicationFormData(formId) {
     const promisesArray = [
       this.documentContract.applicationForms(formId),

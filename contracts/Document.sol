@@ -96,27 +96,42 @@ contract Document is ReentrancyGuard {
   mapping(address => bool) public theroles;
   mapping(uint256 => bool) public inUseEgn;
   mapping(uint256 => bool) public applicationFormsExist;
-
   uint256 nextAvailableId = 0;
 
   event CreatedApplicationForm(uint256 idApplicationId, ApplicationForm applicationForm);
-
-  function createApplicationForm(ApplicationForm memory applicationForm) public {
-    require(theroles[msg.sender], 'Sender does not have the necessary role');
-    require(
-      !applicationFormsExist[applicationForm.id],
-      'An application with this id already exists'
-    );
-    require(!inUseEgn[applicationForm.egn], 'EGN is already in use');
-    applicationFormsExist[applicationForm.id] = true;
-    applicationForms[applicationForm.id] = applicationForm;
-    inUseEgn[applicationForm.egn] = true;
-    emit CreatedApplicationForm(applicationForm.id, applicationForm);
-  }
-
   event Approved(uint256 _applicationId);
   event Rejected(uint256 _applicationId);
   event Pending(uint256 _applicationId);
+
+  function createApplicationForm(
+    string memory name,
+    uint256 id,
+    string memory ipfsLink,
+    uint256 egn,
+    address user
+  ) public {
+    require(theroles[msg.sender], 'Sender does not have the necessary role');
+    require(!applicationFormsExist[id], 'An application with this id already exists');
+    require(!inUseEgn[egn], 'EGN is already in use');
+
+    // Create a new ApplicationForm struct instance
+    ApplicationForm memory newApplicationForm = ApplicationForm({
+      name: name,
+      status: Status.Pending,
+      id: id,
+      ipfsLink: ipfsLink,
+      egn: egn,
+      user: user
+    });
+
+    // Set the relevant mappings
+    applicationFormsExist[id] = true;
+    applicationForms[id] = newApplicationForm;
+    inUseEgn[egn] = true;
+
+    // Emit an event to indicate that the application form has been created
+    emit CreatedApplicationForm(id, newApplicationForm);
+  }
 
   function approveApplication(uint256 _applicationId) public {
     require(roles[msg.sender] == Role.Admin, 'Only admins can approve applications');

@@ -1,6 +1,5 @@
-const { deploy } = require("hardhat");
-const { encode } = require("@openzeppelin/solidity-abi-utils");
-const { Signer } = require("ethers");
+const { deploy } = require('hardhat');
+const { Signer } = require('ethers');
 
 async function deployDocument(docItemAddress) {
   await hre.run('compile');
@@ -15,4 +14,15 @@ async function deployDocument(docItemAddress) {
   console.log('✅ Contract deployed to:', contract.address);
 }
 
-module.exports = deployDocument;
+async function main() {
+  const docItemAddress = '0xadF269d78aA90bCc7bD5A761e11ec7185CD051F8';
+
+  await deployDocument(docItemAddress);
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch(error => {
+    console.error(error);
+    process.exit(1);
+  });

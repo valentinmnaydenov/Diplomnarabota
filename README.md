@@ -1,6 +1,4 @@
-# 🚗 Sit and Drive App
-
-Opinionated minimal boilerplate for starting React projects with Bootstrap and couple more goodies.
+# 👨‍💻 Decentralised identity system
 
 ## 💡 Some prerequisites
 

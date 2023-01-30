@@ -19,6 +19,7 @@ const ApplicationForm = ({ sdk }) => {
 
   const storeNFT = async (name, imageFile) => {
     const client = new NFTStorage({ token: process.env.REACT_APP_NFT_STORAGE_KEY });
+    console.log(process.env.REACT_APP_NFT_STORAGE_KEY);
     const metadata = await client.store({
       name,
       image: imageFile,
@@ -60,6 +61,17 @@ const ApplicationForm = ({ sdk }) => {
   };
 
   const handleButtonMint = async () => {
+    const isValidAddress = address => {
+      // Regular expression to match an Ethereum address
+      const addressRegex = /^0x[a-fA-F0-9]{40}$/;
+      return addressRegex.test(address);
+    };
+
+    const isValidENSNames = name => {
+      // Regular expression to match an ENS name
+      const ensNameRegex = /^[a-z0-9-.]{3,32}$/;
+      return ensNameRegex.test(name);
+    };
     if (!sdk) {
       console.log('sdk object is undefined. Aborting createApplicationForm call.');
       return;
@@ -69,7 +81,6 @@ const ApplicationForm = ({ sdk }) => {
     }
 
     setIsLoading(true);
-
     try {
       const { nftName, egn } = formState;
       const imageFile = document.querySelector("input[name='nftImage']").files[0];
@@ -77,6 +88,18 @@ const ApplicationForm = ({ sdk }) => {
       const metadata = await storeNFT(nftName, imageFile);
       const tokenURI = metadata.cid;
       const collectionID = metadata.collectionId;
+      console.log('nftName:', nftName);
+      console.log('isValidAddress(nftName):', isValidAddress(nftName));
+      console.log('isValidENSNames(nftName):', isValidENSNames(nftName));
+      console.log(
+        `Minting NFT with name: ${nftName}, egn: ${egn}, tokenURI: ${tokenURI}, collectionID: ${collectionID}`,
+      );
+
+      // check if the passed name is a valid Ethereum address or ENS name
+      if (!isValidAddress(nftName) && !isValidENSNames(nftName)) {
+        console.log(`Invalid Ethereum address or ENS name: ${nftName}`);
+        return;
+      }
       await sdk.createApplicationForm(nftName, egn, tokenURI, collectionID);
     } catch (errors) {
       console.log('Error:', errors);
@@ -85,8 +108,8 @@ const ApplicationForm = ({ sdk }) => {
     } finally {
       setIsLoading(false);
     }
-    console.log(sdk);
   };
+
   return (
     <div className="container my-5 py-6">
       <div className="row">

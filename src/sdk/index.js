@@ -48,16 +48,8 @@ class SDK {
     return await this.docItemContract.nfts(tokenId);
   }
 
-  createApplicationForm = async (name, egn, tokenURI, collectionId, user) => {
-    const tx = await this.documentContract.createApplicationForm(
-      name,
-      egn,
-      tokenURI,
-      collectionId,
-      {
-        from: user,
-      },
-    );
+  createApplicationForm = async (name, egn, tokenURI, user) => {
+    const tx = await this.documentContract.createApplicationForm(name, egn, tokenURI, egn, user);
     await tx.wait();
     return tx;
   };

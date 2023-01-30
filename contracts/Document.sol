@@ -110,7 +110,6 @@ contract Document is ReentrancyGuard {
     uint256 egn,
     address user
   ) public {
-    require(theroles[msg.sender], 'Sender does not have the necessary role');
     require(!applicationFormsExist[id], 'An application with this id already exists');
     require(!inUseEgn[egn], 'EGN is already in use');
 

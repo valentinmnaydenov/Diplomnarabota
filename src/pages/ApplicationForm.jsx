@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { NFTStorage } from 'nft.storage';
+import Button from '../components/ui/Button';
 
 const ApplicationForm = ({ sdk }) => {
   const [formState, setFormState] = useState({
-    nftName: '',
+    applicationName: '',
     egn: '',
   });
 
@@ -29,15 +30,15 @@ const ApplicationForm = ({ sdk }) => {
   };
 
   const isFormValid = () => {
-    const { nftName, egn } = formState;
+    const { applicationName, egn } = formState;
     const imageFile = document.querySelector("input[name='nftImage']").files[0];
 
     const errors = {};
     setHasError(false);
     setFormErrors(errors);
 
-    if (nftName === '') {
-      errors.nftName = 'Name is required';
+    if (applicationName === '') {
+      errors.applicationName = 'Name is required';
     }
 
     if (egn === '') {
@@ -71,13 +72,17 @@ const ApplicationForm = ({ sdk }) => {
     setIsLoading(true);
 
     try {
-      const { nftName, egn } = formState;
+      const { applicationName, egn } = formState;
       const imageFile = document.querySelector("input[name='nftImage']").files[0];
 
-      const metadata = await storeNFT(nftName, imageFile);
-      const tokenURI = metadata.cid;
-      const collectionID = metadata.collectionId;
-      await sdk.createApplicationForm(nftName, egn, tokenURI, collectionID);
+      const metadata = await storeNFT(applicationName, imageFile);
+      const tokenURI = metadata.url;
+      await sdk.createApplicationForm(applicationName, egn, tokenURI, sdk.currentUser);
+
+      setFormState({
+        applicationName: '',
+        egn: '',
+      });
     } catch (errors) {
       console.log('Error:', errors);
       setHasError(true);
@@ -95,57 +100,52 @@ const ApplicationForm = ({ sdk }) => {
 
           <div className="mt-4">
             {hasError ? <div className="alert alert-danger my-4">{errorMessage}</div> : null}
-            <form>
-              <div className={`form-group ${formErrors.nftName ? 'has-error' : ''}`}>
-                <label htmlFor="nftName">Name</label>
-                <input
-                  type="text"
-                  className={`form-control ${formErrors.nftName ? 'is-invalid' : ''}`}
-                  id="nftName"
-                  name="nftName"
-                  onChange={handleInputChange}
-                />
-                {formErrors.nftName && <div className="invalid-feedback">{formErrors.nftName}</div>}
-              </div>
+            <div className={`form-group ${formErrors.applicationName ? 'has-error' : ''}`}>
+              <label htmlFor="applicationName">Name</label>
+              <input
+                type="text"
+                className={`form-control ${formErrors.applicationName ? 'is-invalid' : ''}`}
+                id="applicationName"
+                name="applicationName"
+                onChange={handleInputChange}
+                value={formState.applicationName}
+              />
+              {formErrors.applicationName && (
+                <div className="invalid-feedback">{formErrors.applicationName}</div>
+              )}
+            </div>
 
-              <div className={`form-group mt-4 ${formErrors.egn ? 'has-error' : ''}`}>
-                <label htmlFor="egn">EGN</label>
-                <input
-                  type="text"
-                  className={`form-control ${formErrors.egn ? 'is-invalid' : ''}`}
-                  id="egn"
-                  name="egn"
-                  onChange={handleInputChange}
-                />
-                {formErrors.egn && <div className="invalid-feedback">{formErrors.egn}</div>}
-              </div>
+            <div className={`form-group mt-4 ${formErrors.egn ? 'has-error' : ''}`}>
+              <label htmlFor="egn">EGN</label>
+              <input
+                type="text"
+                className={`form-control ${formErrors.egn ? 'is-invalid' : ''}`}
+                id="egn"
+                name="egn"
+                onChange={handleInputChange}
+                value={formState.egn}
+              />
+              {formErrors.egn && <div className="invalid-feedback">{formErrors.egn}</div>}
+            </div>
 
-              <div className={`form-group mt-4 ${formErrors.nftImage ? 'has-error' : ''}`}>
-                <label htmlFor="nftImage">Image</label>
-                <input
-                  type="file"
-                  className={`form-control ${formErrors.nftImage ? 'is-invalid' : ''}`}
-                  id="nftImage"
-                  name="nftImage"
-                  ref={imageRef}
-                  onChange={handleInputChange}
-                />
-                {formErrors.nftImage && (
-                  <div className="invalid-feedback">{formErrors.nftImage}</div>
-                )}
-              </div>
+            <div className={`form-group mt-4 ${formErrors.nftImage ? 'has-error' : ''}`}>
+              <label htmlFor="nftImage">Image</label>
+              <input
+                type="file"
+                className={`form-control ${formErrors.nftImage ? 'is-invalid' : ''}`}
+                id="nftImage"
+                name="nftImage"
+                ref={imageRef}
+                onChange={handleInputChange}
+              />
+              {formErrors.nftImage && <div className="invalid-feedback">{formErrors.nftImage}</div>}
+            </div>
 
-              <div className="d-flex justify-content-center mt-4">
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={handleButtonMint}
-                  disabled={isLoading}
-                >
-                  Mint
-                </button>
-              </div>
-            </form>
+            <div className="d-flex justify-content-center mt-4">
+              <Button loading={isLoading} onClick={handleButtonMint} disabled={isLoading}>
+                Mint
+              </Button>
+            </div>
           </div>
         </div>
       </div>

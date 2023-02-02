@@ -10,7 +10,7 @@ async function deployDocItem() {
 
   await docItem.deployed();
 
-  console.log('✅ Contract deployed to:', marketItem.address);
+  console.log('✅ Contract deployed to:', docItem.address);
 }
 
 module.exports = deployDocItem;

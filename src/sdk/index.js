@@ -49,23 +49,30 @@ class SDK {
   }
 
   createApplicationForm = async (name, egn, tokenURI, user) => {
-    const tx = await this.documentContract.createApplicationForm(name, egn, tokenURI, egn, user);
+    const tx = await this.documentContract.createApplicationForm(name, tokenURI, egn, user);
     await tx.wait();
     return tx;
   };
 
-  async getApplicationForms() {
-    let forms = [];
-    const formsLength = await this.documentContract.getApplicationFormsLength();
+  async getApplicationFormsIds() {
+    let formIds = [];
+
+    const formsLength = await this.documentContract.getApplicationFormsIdsLenght();
+
+    if (formsLength === 0) {
+      return formIds;
+    }
+
     const promisesArray = [];
 
     for (let i = 0; i < formsLength; i++) {
-      promisesArray.push(this.documentContract.applicationForms(i));
+      promisesArray.push(this.documentContract.applicationFormsIds(i));
     }
 
-    forms = await Promise.all(promisesArray);
+    formIds = await Promise.all(promisesArray);
+    formIds = formIds.map(id => id.toNumber());
 
-    return forms;
+    return formIds;
   }
 
   async approveApplicationForm(formId) {
@@ -80,14 +87,24 @@ class SDK {
     return tx;
   }
 
-  async getApplicationFormData(formId) {
+  async getApplicationFormData(formId, user) {
+    const formCreator = await this.documentContract.formCreators(formId);
+    if (formCreator !== user) {
+      return null;
+    }
+
     const promisesArray = [
       this.documentContract.applicationForms(formId),
       this.docItemContract.tokenURI(formId),
     ];
     const [applicationForm, tokenURI] = await Promise.all(promisesArray);
+
+    if (applicationForm.user !== user || applicationForm.status !== 'filled out') {
+      return null;
+    }
+
     const cid = tokenURI.split('ipfs://')[1];
-    const tokenURIGatway = `https://ipfs.io/ipfs/${cid}`; // fixed here
+    const tokenURIGatway = `https://ipfs.io/ipfs/${cid}`;
     const metadata = await axios(tokenURIGatway);
     const {
       data: { image, name },
@@ -98,5 +115,32 @@ class SDK {
       name,
     };
   }
+  async createIdCard(name, dob, address, gender, pictureURI) {
+    const tx = await this.idCardContract.createIdCard(name, dob, address, gender, pictureURI);
+    await tx.wait();
+    console.log('createIdCard function executed');
+    return tx;
+  }
+
+  async getIdCardData(id) {
+    const promisesArray = [this.idCardContract.idCards(id), this.idCardContract.pictureURIs(id)];
+    const [idCard, pictureURI] = await Promise.all(promisesArray);
+    const cid = pictureURI.split('ipfs://')[1];
+    const pictureURIGatway = `https://ipfs.io/ipfs/${cid}`;
+    const picture = await axios(pictureURIGatway);
+    console.log('getIdCardData function executed');
+    return {
+      ...idCard,
+      picture,
+    };
+  }
+
+  async getApplicationFormCreator(formId) {
+    return await this.documentContract.formCreators(formId);
+  }
+  async getCurrentUserAddress() {
+    return await this.provider.getSigner().getAddress();
+  }
 }
+
 export default SDK;

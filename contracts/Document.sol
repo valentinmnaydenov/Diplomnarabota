@@ -10,6 +10,8 @@ contract Document is ReentrancyGuard {
   address payable public owner;
   DocItem private immutable docItemContract;
 
+  Counters.Counter private _applicationFormsId;
+
   enum Role {
     Admin,
     User
@@ -27,45 +29,37 @@ contract Document is ReentrancyGuard {
     CAR
   }
 
-  enum Eyes {
-    blue,
-    green,
-    brown
-  }
+  // enum Eyes {
+  //   blue,
+  //   green,
+  //   brown
+  // }
 
-  enum Category {
-    A,
-    B,
-    C,
-    D
-  }
-  struct IdCard {
-    string name;
-    uint256 id;
-    Typeofdoc typeofdoc;
-    Eyes eyes;
-    Status status;
-    string photo;
-  }
+  // enum Category {
+  //   A,
+  //   B,
+  //   C,
+  //   D
+  // }
 
-  struct CarLicense {
-    string name;
-    uint256 id;
-    Typeofdoc typeofdoc;
-    Eyes eyes;
-    Status status;
-    Category category;
-    string photo;
-  }
+  // struct CarLicense {
+  //   string name;
+  //   uint256 id;
+  //   Typeofdoc typeofdoc;
+  //   Eyes eyes;
+  //   Status status;
+  //   Category category;
+  //   string photo;
+  // }
 
-  struct Passport {
-    string name;
-    uint256 id;
-    Typeofdoc typeofdoc;
-    Eyes eyes;
-    Status status;
-    string photo;
-  }
+  // struct Passport {
+  //   string name;
+  //   uint256 id;
+  //   Typeofdoc typeofdoc;
+  //   Eyes eyes;
+  //   Status status;
+  //   string photo;
+  // }
 
   struct ApplicationForm {
     string name;
@@ -74,6 +68,13 @@ contract Document is ReentrancyGuard {
     string ipfsLink;
     uint256 egn;
     address user;
+  }
+
+  struct IDCardData {
+    string name;
+    string placeOfBirth;
+    string nationality;
+    bytes photo;
   }
 
   constructor(address _docItemAddress) {
@@ -86,9 +87,9 @@ contract Document is ReentrancyGuard {
     _;
   }
 
-  mapping(uint256 => IdCard) public idcards;
-  mapping(uint256 => CarLicense) public carlicenses;
-  mapping(uint256 => Passport) public passports;
+  mapping(address => IDCardData) public idCards;
+  // mapping(uint256 => CarLicense) public carlicenses;
+  // mapping(uint256 => Passport) public passports;
   mapping(uint256 => ApplicationForm) public applicationForms;
   mapping(uint256 => Status) public applicationStatus;
   mapping(uint256 => bool) public nfts;
@@ -96,40 +97,51 @@ contract Document is ReentrancyGuard {
   mapping(address => bool) public theroles;
   mapping(uint256 => bool) public inUseEgn;
   mapping(uint256 => bool) public applicationFormsExist;
+  mapping(uint256 => address) public formCreators;
   uint256 nextAvailableId = 0;
 
+  uint256[] public applicationFormsIds;
+
   event CreatedApplicationForm(uint256 idApplicationId, ApplicationForm applicationForm);
+
   event Approved(uint256 _applicationId);
   event Rejected(uint256 _applicationId);
   event Pending(uint256 _applicationId);
 
   function createApplicationForm(
     string memory name,
-    uint256 id,
     string memory ipfsLink,
     uint256 egn,
     address user
   ) public {
-    require(!applicationFormsExist[id], 'An application with this id already exists');
+    // require(!applicationFormsExist[id], 'An application with this id already exists');
     require(!inUseEgn[egn], 'EGN is already in use');
 
-    // Create a new ApplicationForm struct instance
+    _applicationFormsId.increment();
+
+    uint256 newFormId = _applicationFormsId.current();
+
     ApplicationForm memory newApplicationForm = ApplicationForm({
       name: name,
       status: Status.Pending,
-      id: id,
+      id: newFormId,
       ipfsLink: ipfsLink,
       egn: egn,
       user: user
     });
 
-    // Set the relevant mappings
-    applicationFormsExist[id] = true;
-    applicationForms[id] = newApplicationForm;
+    formCreators[newFormId] = user;
+    applicationFormsExist[newFormId] = true;
+    applicationForms[newFormId] = newApplicationForm;
     inUseEgn[egn] = true;
 
+    applicationFormsIds.push(newFormId);
     // Emit an event to indicate that the application form has been created
-    emit CreatedApplicationForm(id, newApplicationForm);
+    emit CreatedApplicationForm(newFormId, newApplicationForm);
+  }
+
+  function getApplicationFormsIdsLenght() external view returns (uint256) {
+    return applicationFormsIds.length;
   }
 
   function approveApplication(uint256 _applicationId) public {
@@ -152,5 +164,14 @@ contract Document is ReentrancyGuard {
     require(applicationForms[_applicationId].status != Status.Pending, 'Invalid status');
     applicationForms[_applicationId].status = Status.Pending;
     emit Pending(_applicationId);
+  }
+
+  function createIDCard(
+    string memory _name,
+    string memory _placeOfBirth,
+    string memory _nationality,
+    bytes memory _photo
+  ) public {
+    idCards[msg.sender] = IDCardData(_name, _placeOfBirth, _nationality, _photo);
   }
 }

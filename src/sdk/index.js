@@ -38,14 +38,16 @@ class SDK {
   }
 
   async transfer(from, to, tokenId) {
+    const isNFT = await this.docItemContract.nfts(tokenId);
+    if (!isNFT) {
+      console.error(`Token with ID ${tokenId} is not a valid NFT`);
+      return;
+    }
+
     const tx = await this.docItemContract.transfer(from, to, tokenId);
     await tx.wait();
 
     return tx;
-  }
-
-  async isNFT(tokenId) {
-    return await this.docItemContract.nfts(tokenId);
   }
 
   createApplicationForm = async (name, egn, tokenURI, user) => {
@@ -75,6 +77,25 @@ class SDK {
     return formIds;
   }
 
+  async getApplicationFormData(formId) {
+    const promisesArray = [
+      this.documentContract.applicationForms(formId),
+      this.docItemContract.tokenURI(formId),
+    ];
+    const [applicationForm, tokenURI] = await Promise.all(promisesArray);
+    const cid = tokenURI.split('ipfs://')[1];
+    const tokenURIGatway = `https://ipfs.io/ipfs/${cid}`; // fixed here
+    const metadata = await axios(tokenURIGatway);
+    const {
+      data: { image, name },
+    } = metadata;
+    return {
+      ...applicationForm,
+      image,
+      name,
+    };
+  }
+
   async approveApplicationForm(formId) {
     const tx = await this.documentContract.approveApplicationForm(formId);
     await tx.wait();
@@ -87,60 +108,31 @@ class SDK {
     return tx;
   }
 
-  async getApplicationFormData(formId, user) {
-    const formCreator = await this.documentContract.formCreators(formId);
-    if (formCreator !== user) {
-      return null;
-    }
+  // async getIdCardData(id) {
+  //   const promisesArray = [this.idCardContract.idCards(id), this.idCardContract.pictureURIs(id)];
+  //   const [idCard, pictureURI] = await Promise.all(promisesArray);
+  //   const cid = pictureURI.split('ipfs://')[1];
+  //   const pictureURIGatway = `https://ipfs.io/ipfs/${cid}`;
+  //   const picture = await axios(pictureURIGatway);
+  //   console.log('getIdCardData function executed');
+  //   return {
+  //     ...idCard,
+  //     picture,
+  //   };
+  // }
 
-    const promisesArray = [
-      this.documentContract.applicationForms(formId),
-      this.docItemContract.tokenURI(formId),
-    ];
-    const [applicationForm, tokenURI] = await Promise.all(promisesArray);
+  // async getApplicationFormCreator(formId) {
+  //   return await this.documentContract.formCreators(formId);
+  // }
+  // async getCurrentUserAddress() {
+  //   console.log(this.provider);
+  //   return await this.provider.signerData.userAddress;
+  // }
 
-    if (applicationForm.user !== user || applicationForm.status !== 'filled out') {
-      return null;
-    }
-
-    const cid = tokenURI.split('ipfs://')[1];
-    const tokenURIGatway = `https://ipfs.io/ipfs/${cid}`;
-    const metadata = await axios(tokenURIGatway);
-    const {
-      data: { image, name },
-    } = metadata;
-    return {
-      ...applicationForm,
-      image,
-      name,
-    };
-  }
-  async createIdCard(name, dob, address, gender, pictureURI) {
-    const tx = await this.idCardContract.createIdCard(name, dob, address, gender, pictureURI);
-    await tx.wait();
-    console.log('createIdCard function executed');
-    return tx;
-  }
-
-  async getIdCardData(id) {
-    const promisesArray = [this.idCardContract.idCards(id), this.idCardContract.pictureURIs(id)];
-    const [idCard, pictureURI] = await Promise.all(promisesArray);
-    const cid = pictureURI.split('ipfs://')[1];
-    const pictureURIGatway = `https://ipfs.io/ipfs/${cid}`;
-    const picture = await axios(pictureURIGatway);
-    console.log('getIdCardData function executed');
-    return {
-      ...idCard,
-      picture,
-    };
-  }
-
-  async getApplicationFormCreator(formId) {
-    return await this.documentContract.formCreators(formId);
-  }
-  async getCurrentUserAddress() {
-    return await this.provider.getSigner().getAddress();
-  }
+  // async isFormFilled(address) {
+  //   const filled = await this.documentContract.hasFormBeenFilled(address);
+  //   return filled;
+  // }
 }
 
 export default SDK;

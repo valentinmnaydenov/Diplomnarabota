@@ -3,12 +3,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { NFTStorage } from 'nft.storage';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/ui/Button';
+import { useParams } from 'react-router-dom';
 
 const ApplicationForm = ({ sdk }) => {
-  const [formState, setFormState] = useState({
-    applicationName: '',
-    egn: '',
-  });
+  const [formState, setFormState] = useState({ applicationName: '', egn: '' });
 
   const [formErrors, setFormErrors] = useState({});
   const [hasError, setHasError] = useState(false);
@@ -17,20 +15,20 @@ const ApplicationForm = ({ sdk }) => {
   const imageRef = useRef(null);
   const navigate = useNavigate();
   const [showButtons, setShowButtons] = useState(false);
-  const [formsData, setFormsData] = useState([]);
-  const [userAddress, setUserAddress] = useState('');
+  const [applicationForms, setApplicationForms] = useState([]);
+  const [loadingForms, setLoadingForms] = useState(false);
+  const [fetchAgain, setFetchAgain] = useState(false);
 
   const handleInputChange = e => {
-    setFormState({ ...formState, [e.target.name]: e.target.value });
+    setFormState({
+      ...formState,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const storeNFT = async (name, imageFile) => {
     const client = new NFTStorage({ token: process.env.REACT_APP_NFT_STORAGE_KEY });
-    const metadata = await client.store({
-      name,
-      image: imageFile,
-      description: '',
-    });
+    const metadata = await client.store({ name, image: imageFile, description: '' });
 
     return metadata;
   };
@@ -86,10 +84,7 @@ const ApplicationForm = ({ sdk }) => {
       await sdk.createApplicationForm(applicationName, egn, tokenURI, sdk.currentUser).then(() => {
         setShowButtons(true);
       });
-      setFormState({
-        applicationName: '',
-        egn: '',
-      });
+      setFormState({ applicationName: '', egn: '' });
     } catch (errors) {
       console.log('Error:', errors);
       setHasError(true);
@@ -100,29 +95,39 @@ const ApplicationForm = ({ sdk }) => {
     // console.log(sdk);
   };
 
-  useEffect(() => {
-    const getFormData = async () => {
-      console.log('sdk:', sdk);
-      const currentUserAddress = await sdk.getCurrentUserAddress();
-      const formIds = await sdk.getApplicationFormsIds();
-      let userForm = null;
+  // useEffect(() => {
+  // console.log(sdk);
+  // if (sdk) {
+  //     console.log('Started fetching form IDs');
+  //     sdk.getApplicationFormsIds().then(res => {
+  //       console.log('Finished fetching form IDs:', res);
+  //       const formPromises = res.map(formId => sdk.getApplicationFormData(formId));
+  //     });
+  // }
+  // }, [sdk]);
+  const getFormData = async () => {
+    const formData = await sdk.getApplicationFormData(1);
+    console.log(`Form data:`, formData);
+  };
 
-      for (const id of formIds) {
-        const form = await sdk.getApplicationFormData(id, currentUserAddress);
-        if (form.user === currentUserAddress) {
-          userForm = form;
-          break;
-        }
-      }
+  getFormData();
 
-      if (userForm !== null) {
-        console.log('Form status:', userForm.status);
-      } else {
-        console.log('Form not found');
-      }
-    };
-    getFormData();
-  }, []);
+  // useEffect(() => {
+  //   const getApplicationForms = async () => {
+  //     setLoadingForms(true);
+  //     setFetchAgain(false);
+  //     const formIds = await sdk.getApplicationFormsIds();
+  //     const formPromises = formIds.map(formId => sdk.getApplicationFormData(formId));
+  //     const forms = await Promise.all(formPromises);
+
+  //     const filterAddress = sdk.currentUser;
+  //     const filtered = forms.filter(form => form.ownerAddress === filterAddress);
+
+  //     setApplicationForms(filtered);
+  //     setLoadingForms(false);
+  //   };
+  //   getApplicationForms();
+  // }, [sdk, fetchAgain]);
 
   return (
     <div className="container my-5 py-6">
@@ -140,10 +145,10 @@ const ApplicationForm = ({ sdk }) => {
                 name="applicationName"
                 onChange={handleInputChange}
                 value={formState.applicationName}
-              />
+              />{' '}
               {formErrors.applicationName && (
                 <div className="invalid-feedback">{formErrors.applicationName}</div>
-              )}
+              )}{' '}
             </div>
             <div className={`form-group mt-4 ${formErrors.egn ? 'has-error' : ''}`}>
               <label htmlFor="egn">EGN</label>
@@ -154,8 +159,8 @@ const ApplicationForm = ({ sdk }) => {
                 name="egn"
                 onChange={handleInputChange}
                 value={formState.egn}
-              />
-              {formErrors.egn && <div className="invalid-feedback">{formErrors.egn}</div>}
+              />{' '}
+              {formErrors.egn && <div className="invalid-feedback">{formErrors.egn}</div>}{' '}
             </div>
             <div className={`form-group mt-4 ${formErrors.nftImage ? 'has-error' : ''}`}>
               <label htmlFor="nftImage">Image</label>
@@ -166,8 +171,8 @@ const ApplicationForm = ({ sdk }) => {
                 name="nftImage"
                 ref={imageRef}
                 onChange={handleInputChange}
-              />
-              {formErrors.nftImage && <div className="invalid-feedback">{formErrors.nftImage}</div>}
+              />{' '}
+              {formErrors.nftImage && <div className="invalid-feedback">{formErrors.nftImage}</div>}{' '}
             </div>
             <div className="d-flex justify-content-center mt-4">
               <Button loading={isLoading} onClick={handleButtonMint} disabled={isLoading}>
@@ -182,7 +187,7 @@ const ApplicationForm = ({ sdk }) => {
 
                 <Button onClick={() => console.log('Document 3 selected')}>CAR LICENSE</Button>
               </div>
-            )}
+            )}{' '}
           </div>
         </div>
       </div>

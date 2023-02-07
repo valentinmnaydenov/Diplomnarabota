@@ -20,7 +20,6 @@ function App() {
       const _sdk = new SDK(provider);
       _sdk.initContracts();
       setSdk(_sdk);
-      console.log(_sdk);
     }
   }, [provider]);
 
@@ -32,7 +31,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="application-form" element={<ApplicationForm sdk={sdk} />} />
-            <Route path="documents" element={<Documents sdk={sdk} />} />
+            <Route path="/" element={<Documents sdk={sdk} />} />
           </Routes>
         </div>
         <Footer />

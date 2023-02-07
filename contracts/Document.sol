@@ -96,9 +96,9 @@ contract Document is ReentrancyGuard {
   mapping(address => Role) public roles;
   mapping(address => bool) public theroles;
   mapping(uint256 => bool) public inUseEgn;
-  mapping(uint256 => bool) public applicationFormsExist;
-  mapping(uint256 => address) public formCreators;
-  uint256 nextAvailableId = 0;
+  // mapping(uint256 => bool) public applicationFormsExist;
+  // mapping(uint256 => address) public formCreators;
+  // mapping(address => bool) public filledForms;
 
   uint256[] public applicationFormsIds;
 
@@ -118,7 +118,6 @@ contract Document is ReentrancyGuard {
     require(!inUseEgn[egn], 'EGN is already in use');
 
     _applicationFormsId.increment();
-
     uint256 newFormId = _applicationFormsId.current();
 
     ApplicationForm memory newApplicationForm = ApplicationForm({
@@ -130,15 +129,19 @@ contract Document is ReentrancyGuard {
       user: user
     });
 
-    formCreators[newFormId] = user;
-    applicationFormsExist[newFormId] = true;
+    // formCreators[newFormId] = user;
+    // applicationFormsExist[newFormId] = true;
     applicationForms[newFormId] = newApplicationForm;
     inUseEgn[egn] = true;
+    //  filledForms[user] = true;
 
     applicationFormsIds.push(newFormId);
-    // Emit an event to indicate that the application form has been created
     emit CreatedApplicationForm(newFormId, newApplicationForm);
   }
+
+  // function hasFormBeenFilled(address _user) public view returns (bool) {
+  //   return filledForms[_user];
+  // }
 
   function getApplicationFormsIdsLenght() external view returns (uint256) {
     return applicationFormsIds.length;

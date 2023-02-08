@@ -10,8 +10,6 @@ contract Document is ReentrancyGuard {
   address payable public owner;
   DocItem private immutable docItemContract;
 
-  Counters.Counter private _applicationFormsId;
-
   enum Role {
     Admin,
     User
@@ -117,8 +115,7 @@ contract Document is ReentrancyGuard {
     // require(!applicationFormsExist[id], 'An application with this id already exists');
     require(!inUseEgn[egn], 'EGN is already in use');
 
-    _applicationFormsId.increment();
-    uint256 newFormId = _applicationFormsId.current();
+    uint256 newFormId = docItemContract.mintItem(user, ipfsLink);
 
     ApplicationForm memory newApplicationForm = ApplicationForm({
       name: name,
@@ -129,13 +126,10 @@ contract Document is ReentrancyGuard {
       user: user
     });
 
-    // formCreators[newFormId] = user;
-    // applicationFormsExist[newFormId] = true;
     applicationForms[newFormId] = newApplicationForm;
     inUseEgn[egn] = true;
-    //  filledForms[user] = true;
-
     applicationFormsIds.push(newFormId);
+
     emit CreatedApplicationForm(newFormId, newApplicationForm);
   }
 

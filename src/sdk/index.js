@@ -82,16 +82,33 @@ class SDK {
       this.documentContract.applicationForms(formId),
       this.docItemContract.tokenURI(formId),
     ];
-    const [applicationForm, tokenURI] = await Promise.all(promisesArray);
+    const [applicationFormRaw, tokenURI] = await Promise.all(promisesArray);
     const cid = tokenURI.split('ipfs://')[1];
     const tokenURIGatway = `https://ipfs.io/ipfs/${cid}`; // fixed here
     const metadata = await axios(tokenURIGatway);
     const {
       data: { image, name },
     } = metadata;
+
+    console.log(`tokenURIGatway = `, tokenURIGatway);
+
+    const cidImage = image.split('ipfs://')[1];
+    console.log(`cidImage = `, cidImage);
+    const imageUrl = `https://ipfs.io/ipfs/${cidImage}`;
+
+    console.log(`applicationFormRaw = `, applicationFormRaw);
+
+    const applicationForm = {
+      egn: applicationFormRaw.egn.toString(),
+      user: applicationFormRaw.user,
+      id: applicationFormRaw.id.toString(),
+    };
+
+    console.log(`imageUrl = `, imageUrl);
+
     return {
       ...applicationForm,
-      image,
+      imageUrl,
       name,
     };
   }

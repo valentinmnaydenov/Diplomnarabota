@@ -33,7 +33,10 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="application-form" element={<ApplicationForm sdk={sdk} />} />
             <Route path="documents" element={<Documents sdk={sdk} />} />
+<<<<<<< HEAD
             <Route path="idcard" element={<IDcard sdk={sdk} />} />
+=======
+>>>>>>> 843702e4c8429e3f31e9f252ca3bdfabdb87fbc7
           </Routes>
         </div>
         <Footer />

@@ -26,6 +26,7 @@ const Documents = ({ sdk }) => {
     sdk && getApplicationForms();
   }, [sdk, getApplicationForms]);
 
+<<<<<<< HEAD
   const handleApproveForm = async formId => {
     try {
       await sdk.approveApplicationForm(formId);
@@ -63,6 +64,9 @@ const Documents = ({ sdk }) => {
       console.error(error);
     }
   };
+=======
+  console.log(forms);
+>>>>>>> 843702e4c8429e3f31e9f252ca3bdfabdb87fbc7
 
   return (
     <div className="container py-5">
@@ -77,7 +81,10 @@ const Documents = ({ sdk }) => {
               <th>EGN</th>
               <th>Status</th>
               <th>Image</th>
+<<<<<<< HEAD
               <th>Actions</th>
+=======
+>>>>>>> 843702e4c8429e3f31e9f252ca3bdfabdb87fbc7
             </tr>
           </thead>
           {forms.length > 0 ? (
@@ -86,6 +93,7 @@ const Documents = ({ sdk }) => {
                 <tr key={form.id}>
                   <td>{form.name}</td>
                   <td>{form.egn}</td>
+<<<<<<< HEAD
                   <td>
                     {typeof form.status === 'string'
                       ? form.status === 'approved'
@@ -119,6 +127,11 @@ const Documents = ({ sdk }) => {
                         </button>
                       </>
                     )}
+=======
+                  <td>{form.status}</td>
+                  <td>
+                    <img src={form.imageUrl} alt="" />
+>>>>>>> 843702e4c8429e3f31e9f252ca3bdfabdb87fbc7
                   </td>
                 </tr>
               ))}

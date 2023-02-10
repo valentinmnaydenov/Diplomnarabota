@@ -176,7 +176,11 @@ const ApplicationForm = ({ sdk }) => {
                 </div>
                 {showButtons && (
                   <div className="d-flex justify-content-center mt-4">
+<<<<<<< HEAD
                     <Button onClick={() => navigate('/idcard', {})}>ID CARD</Button>
+=======
+                    <Button onClick={() => navigate('/documents', {})}>ID CARD</Button>
+>>>>>>> 843702e4c8429e3f31e9f252ca3bdfabdb87fbc7
 
                     <Button onClick={() => console.log('Document 2 selected')}>Passport</Button>
 

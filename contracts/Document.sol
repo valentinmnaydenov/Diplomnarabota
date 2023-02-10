@@ -10,8 +10,6 @@ contract Document is ReentrancyGuard {
   address payable public owner;
   DocItem private immutable docItemContract;
 
-  Counters.Counter private _applicationFormsId;
-
   enum Role {
     Admin,
     User
@@ -71,10 +69,15 @@ contract Document is ReentrancyGuard {
   }
 
   struct IDCardData {
-    string name;
-    string placeOfBirth;
+    uint256 id;
+    string phoneNumber;
     string nationality;
-    bytes photo;
+    string dateOfBirth;
+    uint256 identityCardNumber;
+    string permanentAddress;
+    string eyeColor;
+    string height;
+    string dateOfIssue;
   }
 
   constructor(address _docItemAddress) {
@@ -87,20 +90,21 @@ contract Document is ReentrancyGuard {
     _;
   }
 
-  mapping(address => IDCardData) public idCards;
-  // mapping(uint256 => CarLicense) public carlicenses;
-  // mapping(uint256 => Passport) public passports;
   mapping(uint256 => ApplicationForm) public applicationForms;
   mapping(uint256 => Status) public applicationStatus;
   mapping(uint256 => bool) public nfts;
   mapping(address => Role) public roles;
   mapping(address => bool) public theroles;
   mapping(uint256 => bool) public inUseEgn;
+  mapping(uint256 => IDCardData) public idCards;
+  mapping(uint256 => bool) public inUseIdentityCardNumber;
+  uint256 public cardCount = 0;
   // mapping(uint256 => bool) public applicationFormsExist;
   // mapping(uint256 => address) public formCreators;
   // mapping(address => bool) public filledForms;
 
   uint256[] public applicationFormsIds;
+  uint256[] public idCardsIds;
 
   event CreatedApplicationForm(uint256 idApplicationId, ApplicationForm applicationForm);
 
@@ -114,11 +118,9 @@ contract Document is ReentrancyGuard {
     uint256 egn,
     address user
   ) public {
-    // require(!applicationFormsExist[id], 'An application with this id already exists');
     require(!inUseEgn[egn], 'EGN is already in use');
 
-    _applicationFormsId.increment();
-    uint256 newFormId = _applicationFormsId.current();
+    uint256 newFormId = docItemContract.mintItem(user, ipfsLink);
 
     ApplicationForm memory newApplicationForm = ApplicationForm({
       name: name,
@@ -129,19 +131,12 @@ contract Document is ReentrancyGuard {
       user: user
     });
 
-    // formCreators[newFormId] = user;
-    // applicationFormsExist[newFormId] = true;
     applicationForms[newFormId] = newApplicationForm;
     inUseEgn[egn] = true;
-    //  filledForms[user] = true;
-
     applicationFormsIds.push(newFormId);
+
     emit CreatedApplicationForm(newFormId, newApplicationForm);
   }
-
-  // function hasFormBeenFilled(address _user) public view returns (bool) {
-  //   return filledForms[_user];
-  // }
 
   function getApplicationFormsIdsLenght() external view returns (uint256) {
     return applicationFormsIds.length;
@@ -169,12 +164,58 @@ contract Document is ReentrancyGuard {
     emit Pending(_applicationId);
   }
 
+  function updateApplicationFormStatus(uint256 _applicationId, Status _newStatus) public {
+    require(roles[msg.sender] == Role.Admin, 'Only admins can update application form status');
+
+    ApplicationForm storage applicationForm = applicationForms[_applicationId];
+
+    if (_newStatus == Status.Approved) {
+      require(applicationForm.status == Status.Pending, 'Invalid status');
+      applicationForm.status = _newStatus;
+      emit Approved(_applicationId);
+    } else if (_newStatus == Status.Rejected) {
+      require(applicationForm.status == Status.Pending, 'Invalid status');
+      applicationForm.status = _newStatus;
+      emit Rejected(_applicationId);
+    } else if (_newStatus == Status.Pending) {
+      require(applicationForm.status != Status.Pending, 'Invalid status');
+      applicationForm.status = _newStatus;
+      emit Pending(_applicationId);
+    }
+  }
+
+  event CreatedIDCard(uint256 _applicationId, uint256 idCardsIds, IDCardData idcard);
+
   function createIDCard(
-    string memory _name,
-    string memory _placeOfBirth,
-    string memory _nationality,
-    bytes memory _photo
+    uint256 _applicationId,
+    uint256 id,
+    string memory phoneNumber,
+    string memory nationality,
+    string memory dateOfBirth,
+    uint256 identityCardNumber,
+    string memory permanentAddress,
+    string memory eyeColor,
+    string memory height,
+    string memory dateOfIssue
   ) public {
-    idCards[msg.sender] = IDCardData(_name, _placeOfBirth, _nationality, _photo);
+    require(!inUseIdentityCardNumber[identityCardNumber], 'Identity card number is already in use');
+
+    IDCardData memory newIDCardData = IDCardData({
+      id: id,
+      phoneNumber: phoneNumber,
+      nationality: nationality,
+      dateOfBirth: dateOfBirth,
+      identityCardNumber: identityCardNumber,
+      permanentAddress: permanentAddress,
+      eyeColor: eyeColor,
+      height: height,
+      dateOfIssue: dateOfIssue
+    });
+
+    idCards[id] = newIDCardData;
+    inUseIdentityCardNumber[identityCardNumber] = true;
+    idCardsIds.push(id);
+
+    emit CreatedIDCard(_applicationId, id, newIDCardData);
   }
 }

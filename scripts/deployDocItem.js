@@ -1,6 +1,6 @@
 const hre = require('hardhat');
 
-async function deployDocItem() {
+async function main() {
   await hre.run('compile');
 
   console.log('⚙️ Deploying DocItem contract...');
@@ -13,4 +13,9 @@ async function deployDocItem() {
   console.log('✅ Contract deployed to:', docItem.address);
 }
 
-module.exports = deployDocItem;
+main()
+  .then(() => process.exit(0))
+  .catch(error => {
+    console.error(error);
+    process.exit(1);
+  });

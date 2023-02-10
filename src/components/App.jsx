@@ -7,6 +7,7 @@ import SDK from '../sdk/index';
 import Home from '../pages/Home';
 import ApplicationForm from '../pages/ApplicationForm';
 import Documents from '../pages/Documents';
+import IDcard from '../pages/IDcard';
 
 import Header from './layout/Header';
 import Footer from './layout/Footer';
@@ -31,7 +32,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="application-form" element={<ApplicationForm sdk={sdk} />} />
-            <Route path="/" element={<Documents sdk={sdk} />} />
+            <Route path="documents" element={<Documents sdk={sdk} />} />
+            <Route path="idcard" element={<IDcard sdk={sdk} />} />
           </Routes>
         </div>
         <Footer />

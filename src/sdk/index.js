@@ -82,57 +82,102 @@ class SDK {
       this.documentContract.applicationForms(formId),
       this.docItemContract.tokenURI(formId),
     ];
-    const [applicationForm, tokenURI] = await Promise.all(promisesArray);
+    const [applicationFormRaw, tokenURI] = await Promise.all(promisesArray);
     const cid = tokenURI.split('ipfs://')[1];
     const tokenURIGatway = `https://ipfs.io/ipfs/${cid}`; // fixed here
     const metadata = await axios(tokenURIGatway);
     const {
       data: { image, name },
     } = metadata;
+
+    console.log(`tokenURIGatway = `, tokenURIGatway);
+
+    const cidImage = image.split('ipfs://')[1];
+    console.log(`cidImage = `, cidImage);
+    const imageUrl = `https://ipfs.io/ipfs/${cidImage}`;
+
+    console.log(`applicationFormRaw = `, applicationFormRaw);
+
+    const applicationForm = {
+      egn: applicationFormRaw.egn.toString(),
+      user: applicationFormRaw.user,
+      id: applicationFormRaw.id.toString(),
+    };
+
+    console.log(`imageUrl = `, imageUrl);
+
     return {
       ...applicationForm,
-      image,
+      imageUrl,
       name,
     };
   }
 
   async approveApplicationForm(formId) {
-    const tx = await this.documentContract.approveApplicationForm(formId);
+    const tx = await this.documentContract.approveApplication(formId);
     await tx.wait();
     return tx;
   }
 
   async rejectApplicationForm(formId) {
-    const tx = await this.documentContract.rejectApplicationForm(formId);
+    const tx = await this.documentContract.rejectApplication(formId);
     await tx.wait();
     return tx;
   }
 
-  // async getIdCardData(id) {
-  //   const promisesArray = [this.idCardContract.idCards(id), this.idCardContract.pictureURIs(id)];
-  //   const [idCard, pictureURI] = await Promise.all(promisesArray);
-  //   const cid = pictureURI.split('ipfs://')[1];
-  //   const pictureURIGatway = `https://ipfs.io/ipfs/${cid}`;
-  //   const picture = await axios(pictureURIGatway);
-  //   console.log('getIdCardData function executed');
-  //   return {
-  //     ...idCard,
-  //     picture,
-  //   };
-  // }
+  async updateApplicationFormStatus(formId, newStatus) {
+    const statusValue = this.documentContract.Status[newStatus];
+    const tx = await this.documentContract.updateApplicationFormStatus(formId, statusValue);
+    await tx.wait();
+    return tx;
+  }
 
-  // async getApplicationFormCreator(formId) {
-  //   return await this.documentContract.formCreators(formId);
-  // }
-  // async getCurrentUserAddress() {
-  //   console.log(this.provider);
-  //   return await this.provider.signerData.userAddress;
-  // }
+  async createIDCard(
+    id,
+    phoneNumber,
+    nationality,
+    dateOfBirth,
+    identityCardNumber,
+    permanentAddress,
+    eyeColor,
+    height,
+    dateOfIssue,
+  ) {
+    const tx = await this.contract.createIDCard(
+      id,
+      phoneNumber,
+      nationality,
+      dateOfBirth,
+      identityCardNumber,
+      permanentAddress,
+      eyeColor,
+      height,
+      dateOfIssue,
+      { from: this.defaultAccount },
+    );
+    await tx.wait();
+    return tx;
+  }
 
-  // async isFormFilled(address) {
-  //   const filled = await this.documentContract.hasFormBeenFilled(address);
-  //   return filled;
-  // }
+  async getIDCardsIds() {
+    const idCardsIds = await this.contract.getIDCardsIds();
+    return idCardsIds.map(id => id.toNumber());
+  }
+
+  async getIDCardData(idCardId) {
+    const idCard = await this.contract.idCards(idCardId);
+    return {
+      id: idCard.id.toNumber(),
+      phoneNumber: idCard.phoneNumber,
+      nationality: idCard.nationality,
+      dateOfBirth: idCard.dateOfBirth,
+      identityCardNumber: idCard.identityCardNumber.toNumber(),
+      permanentAddress: idCard.permanentAddress,
+      eyeColor: idCard.eyeColor,
+      height: idCard.height,
+      dateOfIssue: idCard.dateOfIssue,
+    };
+  }
 }
 
 export default SDK;

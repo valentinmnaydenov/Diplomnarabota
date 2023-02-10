@@ -15,7 +15,7 @@ async function deployDocument(docItemAddress) {
 }
 
 async function main() {
-  const docItemAddress = '0xadF269d78aA90bCc7bD5A761e11ec7185CD051F8';
+  const docItemAddress = '0xBB4fAFeAfCD96b98c3155895b60bF8f526a5C651';
 
   await deployDocument(docItemAddress);
 }

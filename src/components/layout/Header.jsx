@@ -13,6 +13,12 @@ function Header() {
             <Link className="btn btn-primary m-1" to="/" role="button">
               Home
             </Link>
+            <Link className="btn btn-primary m-1" to="/documents" role="button">
+              Documents
+            </Link>
+            <Link className="btn btn-primary m-1" to="/idcard" role="button">
+              IDcard
+            </Link>
 
             <p>{provider ? <code>{provider.signerData.userAddress}</code> : 'Not connected'}</p>
           </div>

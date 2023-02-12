@@ -82,12 +82,9 @@ class SDK {
   }
 
   async getApplicationFormData(formId) {
-    const promisesArray = [
-      this.documentContract.applicationForms(formId),
-      this.docItemContract.tokenURI(formId),
-    ];
-    const [applicationFormRaw, tokenURI] = await Promise.all(promisesArray);
-    const cid = tokenURI.split('ipfs://')[1];
+    const promisesArray = [this.documentContract.applicationForms(formId)];
+    const [applicationFormRaw] = await Promise.all(promisesArray);
+    const cid = applicationFormRaw.ipfsLink.split('ipfs://')[1];
     const tokenURIGatway = `https://ipfs.io/ipfs/${cid}`; // fixed here
     const metadata = await axios(tokenURIGatway);
     const {

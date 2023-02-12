@@ -12,6 +12,7 @@ const IDcard = ({ sdk }) => {
     const formIds = await sdk.getApplicationFormsIds();
     if (formIds.length > 0) {
       const latestFormId = formIds[formIds.length - 1];
+      console.log(latestFormId);
       const formData = await sdk.getApplicationFormData(latestFormId);
       const formStatus = await sdk.approveApplicationForm(latestFormId);
 

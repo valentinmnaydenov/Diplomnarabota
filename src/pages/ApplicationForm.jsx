@@ -17,6 +17,21 @@ const ApplicationForm = ({ sdk }) => {
   const [showButtons, setShowButtons] = useState(false);
   const [applicationForms, setApplicationForms] = useState([]);
   const [loadingForms, setLoadingForms] = useState(false);
+  const [balance, setBalance] = useState(0);
+
+  const checkBalance = async () => {
+    setIsLoading(true);
+    try {
+      const balance = await sdk.balanceOf(sdk.currentUser);
+      setBalance(balance);
+    } catch (error) {
+      console.log(error);
+      setHasError(true);
+      setErrorMessage(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleInputChange = e => {
     setFormState({
@@ -73,6 +88,17 @@ const ApplicationForm = ({ sdk }) => {
       return;
     }
 
+    let balance = await sdk.balanceOf(sdk.currentUser);
+    if (!sdk.currentUser) {
+      setHasError(true);
+      setErrorMessage("You don't have an identity. Please log in.");
+      return;
+    } else if (balance === 0) {
+      setHasError(true);
+      setErrorMessage("You don't have enough funds. Please add some funds.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -95,6 +121,10 @@ const ApplicationForm = ({ sdk }) => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    checkBalance();
+  }, []);
 
   const getApplicationForms = useCallback(async () => {
     if (!sdk) return;

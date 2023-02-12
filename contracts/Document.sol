@@ -131,34 +131,34 @@ contract Document is ReentrancyGuard {
   }
 
   function approveApplication(uint256 newFormId) public {
-    require(roles[msg.sender] == Role.Admin, 'Only admins can approve applications');
+    // require(roles[msg.sender] == Role.Admin, 'Only admins can approve applications');
     require(applicationForms[newFormId].status == Status.Pending, 'Invalid status');
-    require(
-      docItemContract.balanceOf(applicationForms[newFormId].user) == 0,
-      'Application form must first be approved'
-    );
+    // require(
+    //   docItemContract.balanceOf(applicationForms[newFormId].user) != 0,
+    //   'User already create their identity'
+    // );
     applicationForms[newFormId].status = Status.Approved;
     docItemContract.mintItem(applicationForms[newFormId].user, 'my-token-uri');
     emit Approved(newFormId);
   }
 
   function rejectApplication(uint256 newFormId) public {
-    require(roles[msg.sender] == Role.Admin, 'Only admins can reject applications');
+    // require(roles[msg.sender] == Role.Admin, 'Only admins can reject applications');
     require(applicationForms[newFormId].status == Status.Pending, 'Invalid status');
     applicationForms[newFormId].status = Status.Rejected;
     emit Rejected(newFormId);
   }
 
-  function pendingApplication(uint256 _applicationId) public {
-    require(roles[msg.sender] == Role.Admin, 'Only admins can mark applications as pending');
-    require(applicationForms[_applicationId].status != Status.Pending, 'Invalid status');
+  // function pendingApplication(uint256 _applicationId) public {
+  //   // require(roles[msg.sender] == Role.Admin, 'Only admins can mark applications as pending');
+  //   require(applicationForms[_applicationId].status != Status.Pending, 'Invalid status');
 
-    ApplicationForm storage form = applicationForms[_applicationId];
-    require(docItemContract.balanceOf(form.user) == 0, 'Token has already been minted');
+  //   ApplicationForm storage form = applicationForms[_applicationId];
+  //   require(docItemContract.balanceOf(form.user) == 0, 'Token has already been minted');
 
-    form.status = Status.Pending;
-    emit Pending(_applicationId);
-  }
+  //   form.status = Status.Pending;
+  //   emit Pending(_applicationId);
+  // }
 
   // function updateApplicationFormStatus(uint256 _applicationId, Status _newStatus) public {
   //   require(roles[msg.sender] == Role.Admin, 'Only admins can update application form status');
@@ -196,6 +196,9 @@ contract Document is ReentrancyGuard {
   ) public {
     require(!inUseIdentityCardNumber[identityCardNumber], 'Identity card number is already in use');
 
+    uint256 newFormId = idCardCounter;
+    idCardCounter++;
+
     IDCardData memory newIDCardData = IDCardData({
       id: id,
       phoneNumber: phoneNumber,
@@ -208,10 +211,10 @@ contract Document is ReentrancyGuard {
       dateOfIssue: dateOfIssue
     });
 
-    idCards[id] = newIDCardData;
+    idCards[newFormId] = newIDCardData;
     inUseIdentityCardNumber[identityCardNumber] = true;
-    idCardsIds.push(id);
+    idCardsIds.push(newFormId);
 
-    emit CreatedIDCard(_applicationId, id, newIDCardData);
+    emit CreatedIDCard(_applicationId, newFormId, newIDCardData);
   }
 }

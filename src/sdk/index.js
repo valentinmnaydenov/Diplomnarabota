@@ -50,6 +50,10 @@ class SDK {
     return tx;
   }
 
+  async balanceOf() {
+    return await this.docItemContract.balanceOf(this.currentUser);
+  }
+
   createApplicationForm = async (name, egn, tokenURI, user) => {
     const tx = await this.documentContract.createApplicationForm(name, tokenURI, egn, user);
     await tx.wait();

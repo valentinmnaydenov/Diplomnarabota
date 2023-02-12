@@ -29,4 +29,18 @@ contract DocItem is ERC721URIStorage {
     super._transfer(_from, _to, _tokenId);
     nfts[_tokenId] = true;
   }
+
+  function balanceOf(address _address) public view override returns (uint256) {
+    // Check if the address already has a token assigned to it
+    bool hasToken = false;
+    for (uint256 i = 0; i < _tokenIds.current(); i++) {
+      if (ownerOf(i) == _address) {
+        hasToken = true;
+        break;
+      }
+    }
+
+    // Return 1 if the address doesn't have a token, 0 otherwise
+    return hasToken ? 0 : 1;
+  }
 }

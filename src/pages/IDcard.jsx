@@ -10,12 +10,19 @@ const IDcard = ({ sdk }) => {
     setLoadingForms(true);
 
     const formIds = await sdk.getApplicationFormsIds();
-
     if (formIds.length > 0) {
-      const formPromises = formIds.map(formId => sdk.getApplicationFormData(formId));
-      const forms = await Promise.all(formPromises);
+      const latestFormId = formIds[formIds.length - 1];
+      const formData = await sdk.getApplicationFormData(latestFormId);
+      const formStatus = await sdk.approveApplicationForm(latestFormId);
 
-      setForms(forms);
+      if (formStatus === 'rejected') {
+        console.error('Form rejected');
+        return;
+      }
+      if (formData) {
+        const currentShape = formData;
+        setForms([currentShape]);
+      }
     }
 
     setLoadingForms(false);
@@ -73,7 +80,6 @@ const IDcard = ({ sdk }) => {
               <tr>
                 <th>Name</th>
                 <th>EGN</th>
-                <th>Status</th>
                 <th>Image</th>
               </tr>
             </thead>
@@ -83,7 +89,6 @@ const IDcard = ({ sdk }) => {
                   <tr key={form.id}>
                     <td>{form.name}</td>
                     <td>{form.egn}</td>
-                    <td>{form.status}</td>
                     <td>
                       <img src={form.imageUrl} alt="" style={{ height: '100px', width: '100px' }} />
                     </td>

@@ -9,6 +9,8 @@ contract Document is ReentrancyGuard {
   using Counters for Counters.Counter;
   address payable public owner;
   DocItem private immutable docItemContract;
+  uint256 public applicationFormCounter = 0;
+  uint256 public idCardCounter = 0;
 
   enum Role {
     Admin,
@@ -26,38 +28,6 @@ contract Document is ReentrancyGuard {
     PASSPORT,
     CAR
   }
-
-  // enum Eyes {
-  //   blue,
-  //   green,
-  //   brown
-  // }
-
-  // enum Category {
-  //   A,
-  //   B,
-  //   C,
-  //   D
-  // }
-
-  // struct CarLicense {
-  //   string name;
-  //   uint256 id;
-  //   Typeofdoc typeofdoc;
-  //   Eyes eyes;
-  //   Status status;
-  //   Category category;
-  //   string photo;
-  // }
-
-  // struct Passport {
-  //   string name;
-  //   uint256 id;
-  //   Typeofdoc typeofdoc;
-  //   Eyes eyes;
-  //   Status status;
-  //   string photo;
-  // }
 
   struct ApplicationForm {
     string name;
@@ -120,7 +90,8 @@ contract Document is ReentrancyGuard {
   ) public {
     require(!inUseEgn[egn], 'EGN is already in use');
 
-    uint256 newFormId = docItemContract.mintItem(user, ipfsLink);
+    uint256 newFormId = applicationFormCounter;
+    applicationFormCounter++;
 
     ApplicationForm memory newApplicationForm = ApplicationForm({
       name: name,
@@ -138,51 +109,76 @@ contract Document is ReentrancyGuard {
     emit CreatedApplicationForm(newFormId, newApplicationForm);
   }
 
+  // function updateApplicationForm(
+  //   uint256 formId,
+  //   string memory name,
+  //   string memory ipfsLink,
+  //   uint256 egn,
+  //   address user
+  // ) public {
+  //   require(formId < applicationFormCounter, 'Form does not exist');
+  //   require(applicationForms[formId].user == msg.sender, 'Only form owner can update the form');
+  //   require(applicationForms[formId].status == Status.Pending, 'Form must be pending to update');
+
+  //   ApplicationForm storage form = applicationForms[formId];
+  //   form.name = name;
+  //   form.ipfsLink = ipfsLink;
+  //   form.egn = egn;
+  //   form.user = user;
+  // }
   function getApplicationFormsIdsLenght() external view returns (uint256) {
     return applicationFormsIds.length;
   }
 
-  function approveApplication(uint256 _applicationId) public {
+  function approveApplication(uint256 newFormId) public {
     require(roles[msg.sender] == Role.Admin, 'Only admins can approve applications');
-    require(applicationForms[_applicationId].status == Status.Pending, 'Invalid status');
-    applicationForms[_applicationId].status = Status.Approved;
-    docItemContract.mintItem(msg.sender, 'my-token-uri');
-    emit Approved(_applicationId);
+    require(applicationForms[newFormId].status == Status.Pending, 'Invalid status');
+    require(
+      docItemContract.balanceOf(applicationForms[newFormId].user) == 0,
+      'Application form must first be approved'
+    );
+    applicationForms[newFormId].status = Status.Approved;
+    docItemContract.mintItem(applicationForms[newFormId].user, 'my-token-uri');
+    emit Approved(newFormId);
   }
 
-  function rejectApplication(uint256 _applicationId) public {
+  function rejectApplication(uint256 newFormId) public {
     require(roles[msg.sender] == Role.Admin, 'Only admins can reject applications');
-    require(applicationForms[_applicationId].status == Status.Pending, 'Invalid status');
-    applicationForms[_applicationId].status = Status.Rejected;
-    emit Rejected(_applicationId);
+    require(applicationForms[newFormId].status == Status.Pending, 'Invalid status');
+    applicationForms[newFormId].status = Status.Rejected;
+    emit Rejected(newFormId);
   }
 
   function pendingApplication(uint256 _applicationId) public {
     require(roles[msg.sender] == Role.Admin, 'Only admins can mark applications as pending');
     require(applicationForms[_applicationId].status != Status.Pending, 'Invalid status');
-    applicationForms[_applicationId].status = Status.Pending;
+
+    ApplicationForm storage form = applicationForms[_applicationId];
+    require(docItemContract.balanceOf(form.user) == 0, 'Token has already been minted');
+
+    form.status = Status.Pending;
     emit Pending(_applicationId);
   }
 
-  function updateApplicationFormStatus(uint256 _applicationId, Status _newStatus) public {
-    require(roles[msg.sender] == Role.Admin, 'Only admins can update application form status');
+  // function updateApplicationFormStatus(uint256 _applicationId, Status _newStatus) public {
+  //   require(roles[msg.sender] == Role.Admin, 'Only admins can update application form status');
 
-    ApplicationForm storage applicationForm = applicationForms[_applicationId];
+  //   ApplicationForm storage applicationForm = applicationForms[_applicationId];
 
-    if (_newStatus == Status.Approved) {
-      require(applicationForm.status == Status.Pending, 'Invalid status');
-      applicationForm.status = _newStatus;
-      emit Approved(_applicationId);
-    } else if (_newStatus == Status.Rejected) {
-      require(applicationForm.status == Status.Pending, 'Invalid status');
-      applicationForm.status = _newStatus;
-      emit Rejected(_applicationId);
-    } else if (_newStatus == Status.Pending) {
-      require(applicationForm.status != Status.Pending, 'Invalid status');
-      applicationForm.status = _newStatus;
-      emit Pending(_applicationId);
-    }
-  }
+  //   if (_newStatus == Status.Approved) {
+  //     require(applicationForm.status == Status.Pending, 'Invalid status');
+  //     applicationForm.status = _newStatus;
+  //     emit Approved(_applicationId);
+  //   } else if (_newStatus == Status.Rejected) {
+  //     require(applicationForm.status == Status.Pending, 'Invalid status');
+  //     applicationForm.status = _newStatus;
+  //     emit Rejected(_applicationId);
+  //   } else if (_newStatus == Status.Pending) {
+  //     require(applicationForm.status != Status.Pending, 'Invalid status');
+  //     applicationForm.status = _newStatus;
+  //     emit Pending(_applicationId);
+  //   }
+  // }
 
   event CreatedIDCard(uint256 _applicationId, uint256 idCardsIds, IDCardData idcard);
 

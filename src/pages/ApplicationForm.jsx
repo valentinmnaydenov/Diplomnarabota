@@ -7,7 +7,7 @@ import Button from '../components/ui/Button';
 const ApplicationForm = ({ sdk }) => {
   const navigate = useNavigate();
 
-  const [formState, setFormState] = useState({ applicationName: '', egn: '' });
+  const [formState, setFormState] = useState({ applicationName: '', egn: '', status: 'pending' });
 
   const [formErrors, setFormErrors] = useState({});
   const [hasError, setHasError] = useState(false);
@@ -68,6 +68,7 @@ const ApplicationForm = ({ sdk }) => {
       console.log('sdk object is undefined. Aborting createApplicationForm call.');
       return;
     }
+
     if (!isFormValid()) {
       return;
     }
@@ -82,6 +83,7 @@ const ApplicationForm = ({ sdk }) => {
       const tokenURI = metadata.url;
       await sdk.createApplicationForm(applicationName, egn, tokenURI, sdk.currentUser).then(() => {
         setShowButtons(true);
+        setFormState({ ...formState, status: 'pending' });
       });
       setFormState({ applicationName: '', egn: '' });
       getApplicationForms();
@@ -176,11 +178,7 @@ const ApplicationForm = ({ sdk }) => {
                 </div>
                 {showButtons && (
                   <div className="d-flex justify-content-center mt-4">
-<<<<<<< HEAD
                     <Button onClick={() => navigate('/idcard', {})}>ID CARD</Button>
-=======
-                    <Button onClick={() => navigate('/documents', {})}>ID CARD</Button>
->>>>>>> 843702e4c8429e3f31e9f252ca3bdfabdb87fbc7
 
                     <Button onClick={() => console.log('Document 2 selected')}>Passport</Button>
 

@@ -19,20 +19,6 @@ const ApplicationForm = ({ sdk }) => {
   const [loadingForms, setLoadingForms] = useState(false);
   const [balance, setBalance] = useState(0);
 
-  const checkBalance = async () => {
-    setIsLoading(true);
-    try {
-      const balance = await sdk.balanceOf(sdk.currentUser);
-      setBalance(balance);
-    } catch (error) {
-      console.log(error);
-      setHasError(true);
-      setErrorMessage(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleInputChange = e => {
     setFormState({
       ...formState,
@@ -123,8 +109,23 @@ const ApplicationForm = ({ sdk }) => {
   };
 
   useEffect(() => {
-    checkBalance();
-  }, []);
+    const checkBalance = async () => {
+      setIsLoading(true);
+      try {
+        const balance = await sdk.balanceOf(sdk.currentUser);
+        console.log('balance', balance);
+        setBalance(Number(balance.toString()));
+      } catch (error) {
+        console.log(error);
+        setHasError(true);
+        setErrorMessage(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    sdk && sdk.currentUser && checkBalance();
+  }, [sdk]);
 
   const getApplicationForms = useCallback(async () => {
     if (!sdk) return;
@@ -160,62 +161,68 @@ const ApplicationForm = ({ sdk }) => {
           ) : (
             <>
               <h1>Application Form</h1>
-              <div className="mt-4">
-                {hasError ? <div className="alert alert-danger my-4">{errorMessage}</div> : null}
-                <div className={`form-group ${formErrors.applicationName ? 'has-error' : ''}`}>
-                  <label htmlFor="applicationName">Name</label>
-                  <input
-                    type="text"
-                    className={`form-control ${formErrors.applicationName ? 'is-invalid' : ''}`}
-                    id="applicationName"
-                    name="applicationName"
-                    onChange={handleInputChange}
-                    value={formState.applicationName}
-                  />{' '}
-                  {formErrors.applicationName && (
-                    <div className="invalid-feedback">{formErrors.applicationName}</div>
-                  )}{' '}
-                </div>
-                <div className={`form-group mt-4 ${formErrors.egn ? 'has-error' : ''}`}>
-                  <label htmlFor="egn">EGN</label>
-                  <input
-                    type="text"
-                    className={`form-control ${formErrors.egn ? 'is-invalid' : ''}`}
-                    id="egn"
-                    name="egn"
-                    onChange={handleInputChange}
-                    value={formState.egn}
-                  />{' '}
-                  {formErrors.egn && <div className="invalid-feedback">{formErrors.egn}</div>}{' '}
-                </div>
-                <div className={`form-group mt-4 ${formErrors.nftImage ? 'has-error' : ''}`}>
-                  <label htmlFor="nftImage">Image</label>
-                  <input
-                    type="file"
-                    className={`form-control ${formErrors.nftImage ? 'is-invalid' : ''}`}
-                    id="nftImage"
-                    name="nftImage"
-                    onChange={handleInputChange}
-                  />{' '}
-                  {formErrors.nftImage && (
-                    <div className="invalid-feedback">{formErrors.nftImage}</div>
-                  )}{' '}
-                </div>
-                <div className="d-flex justify-content-center mt-4">
-                  <Button loading={isLoading} onClick={handleButtonMint} disabled={isLoading}>
-                    Mint
-                  </Button>
-                </div>
-                {showButtons && (
-                  <div className="d-flex justify-content-center mt-4">
-                    <Button onClick={() => navigate('/idcard', {})}>ID CARD</Button>
-
-                    <Button onClick={() => console.log('Document 2 selected')}>Passport</Button>
-
-                    <Button onClick={() => console.log('Document 3 selected')}>CAR LICENSE</Button>
+              {balance > 0 ? (
+                <p className="text-center my-6">User has an identity</p>
+              ) : (
+                <div className="mt-4">
+                  {hasError ? <div className="alert alert-danger my-4">{errorMessage}</div> : null}
+                  <div className={`form-group ${formErrors.applicationName ? 'has-error' : ''}`}>
+                    <label htmlFor="applicationName">Name</label>
+                    <input
+                      type="text"
+                      className={`form-control ${formErrors.applicationName ? 'is-invalid' : ''}`}
+                      id="applicationName"
+                      name="applicationName"
+                      onChange={handleInputChange}
+                      value={formState.applicationName}
+                    />{' '}
+                    {formErrors.applicationName && (
+                      <div className="invalid-feedback">{formErrors.applicationName}</div>
+                    )}{' '}
                   </div>
-                )}{' '}
-              </div>
+                  <div className={`form-group mt-4 ${formErrors.egn ? 'has-error' : ''}`}>
+                    <label htmlFor="egn">EGN</label>
+                    <input
+                      type="text"
+                      className={`form-control ${formErrors.egn ? 'is-invalid' : ''}`}
+                      id="egn"
+                      name="egn"
+                      onChange={handleInputChange}
+                      value={formState.egn}
+                    />{' '}
+                    {formErrors.egn && <div className="invalid-feedback">{formErrors.egn}</div>}{' '}
+                  </div>
+                  <div className={`form-group mt-4 ${formErrors.nftImage ? 'has-error' : ''}`}>
+                    <label htmlFor="nftImage">Image</label>
+                    <input
+                      type="file"
+                      className={`form-control ${formErrors.nftImage ? 'is-invalid' : ''}`}
+                      id="nftImage"
+                      name="nftImage"
+                      onChange={handleInputChange}
+                    />{' '}
+                    {formErrors.nftImage && (
+                      <div className="invalid-feedback">{formErrors.nftImage}</div>
+                    )}{' '}
+                  </div>
+                  <div className="d-flex justify-content-center mt-4">
+                    <Button loading={isLoading} onClick={handleButtonMint} disabled={isLoading}>
+                      Mint
+                    </Button>
+                  </div>
+                  {showButtons && (
+                    <div className="d-flex justify-content-center mt-4">
+                      <Button onClick={() => navigate('/idcard', {})}>ID CARD</Button>
+
+                      <Button onClick={() => console.log('Document 2 selected')}>Passport</Button>
+
+                      <Button onClick={() => console.log('Document 3 selected')}>
+                        CAR LICENSE
+                      </Button>
+                    </div>
+                  )}{' '}
+                </div>
+              )}
             </>
           )}
         </div>

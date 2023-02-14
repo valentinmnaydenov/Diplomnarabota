@@ -8,16 +8,15 @@ const ApplicationForm = ({ sdk }) => {
   const navigate = useNavigate();
 
   const [formState, setFormState] = useState({ applicationName: '', egn: '', status: 'pending' });
-
   const [formErrors, setFormErrors] = useState({});
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const [showButtons, setShowButtons] = useState(false);
-  const [applicationForms, setApplicationForms] = useState([]);
   const [loadingForms, setLoadingForms] = useState(false);
   const [balance, setBalance] = useState(0);
+  const [formPending, setFormPending] = useState(false);
 
   const handleInputChange = e => {
     setFormState({
@@ -108,12 +107,33 @@ const ApplicationForm = ({ sdk }) => {
     }
   };
 
+  const getApplicationForms = useCallback(async () => {
+    if (!sdk) return;
+
+    setLoadingForms(true);
+
+    const formIds = await sdk.getApplicationFormsIds();
+
+    // Check if there are some forms
+    if (formIds.length > 0) {
+      const formPromises = formIds.map(formId => sdk.getApplicationFormData(formId));
+      const forms = await Promise.all(formPromises);
+
+      // Check if user have an pending form
+      const foundForm =
+        forms.find(form => form.user === sdk.currentUser && form.status === 1) || {};
+
+      setFormPending(Object.keys(foundForm).length > 0);
+    }
+
+    setLoadingForms(false);
+  }, [sdk]);
+
   useEffect(() => {
     const checkBalance = async () => {
       setIsLoading(true);
       try {
         const balance = await sdk.balanceOf(sdk.currentUser);
-        console.log('balance', balance);
         setBalance(Number(balance.toString()));
       } catch (error) {
         console.log(error);
@@ -127,30 +147,11 @@ const ApplicationForm = ({ sdk }) => {
     sdk && sdk.currentUser && checkBalance();
   }, [sdk]);
 
-  const getApplicationForms = useCallback(async () => {
-    if (!sdk) return;
-
-    setLoadingForms(true);
-
-    const formIds = await sdk.getApplicationFormsIds();
-
-    // Check if there are some forms
-    if (formIds.length > 0) {
-      const formPromises = formIds.map(formId => sdk.getApplicationFormData(formId));
-      const forms = await Promise.all(formPromises);
-
-      const filterAddress = sdk.currentUser;
-      const filtered = forms.filter(form => form.user === filterAddress);
-
-      setApplicationForms(filtered);
-    }
-
-    setLoadingForms(false);
-  }, [sdk]);
-
   useEffect(() => {
     sdk && getApplicationForms();
   }, [sdk, getApplicationForms]);
+
+  const userHasMinted = balance > 0;
 
   return (
     <div className="container my-5 py-6">
@@ -161,8 +162,10 @@ const ApplicationForm = ({ sdk }) => {
           ) : (
             <>
               <h1>Application Form</h1>
-              {balance < 0 ? (
+              {userHasMinted < 0 ? (
                 <p className="text-center my-6">User has an identity</p>
+              ) : formPending ? (
+                <p className="text-center my-6">Please wait for admin to approve the form</p>
               ) : (
                 <div className="mt-4">
                   {hasError ? <div className="alert alert-danger my-4">{errorMessage}</div> : null}

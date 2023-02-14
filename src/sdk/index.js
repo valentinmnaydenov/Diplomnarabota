@@ -91,21 +91,15 @@ class SDK {
       data: { image, name },
     } = metadata;
 
-    console.log(`tokenURIGatway = `, tokenURIGatway);
-
     const cidImage = image.split('ipfs://')[1];
-    console.log(`cidImage = `, cidImage);
     const imageUrl = `https://ipfs.io/ipfs/${cidImage}`;
-
-    console.log(`applicationFormRaw = `, applicationFormRaw);
 
     const applicationForm = {
       egn: applicationFormRaw.egn.toString(),
       user: applicationFormRaw.user,
       id: applicationFormRaw.id.toString(),
+      status: applicationFormRaw.status,
     };
-
-    console.log(`imageUrl = `, imageUrl);
 
     return {
       ...applicationForm,

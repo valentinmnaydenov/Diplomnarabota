@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { NFTStorage } from 'nft.storage';
 
 import Button from '../components/ui/Button';
@@ -133,7 +133,7 @@ const ApplicationForm = ({ sdk }) => {
     const checkBalance = async () => {
       setIsLoading(true);
       try {
-        const balance = await sdk.balanceOf(sdk.currentUser);
+        const balance = await sdk.docItemContract.balanceOf(sdk.currentUser);
         setBalance(Number(balance.toString()));
       } catch (error) {
         console.log(error);
@@ -162,10 +162,12 @@ const ApplicationForm = ({ sdk }) => {
           ) : (
             <>
               <h1>Application Form</h1>
-              {userHasMinted < 0 ? (
-                <p className="text-center my-6">User has an identity</p>
+              {userHasMinted ? (
+                <p className="alert alert-info my-6">
+                  User has an identity. Go to <Link to="idcard">idcard creation</Link>
+                </p>
               ) : formPending ? (
-                <p className="text-center my-6">Please wait for admin to approve the form</p>
+                <p className="alert alert-info my-6">Please wait for admin to approve the form.</p>
               ) : (
                 <div className="mt-4">
                   {hasError ? <div className="alert alert-danger my-4">{errorMessage}</div> : null}

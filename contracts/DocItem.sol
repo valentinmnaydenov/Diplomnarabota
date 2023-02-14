@@ -17,6 +17,7 @@ contract DocItem is ERC721URIStorage {
     uint256 newItemId = _tokenIds.current();
     _mint(_minter, newItemId);
     _setTokenURI(newItemId, _tokenURI);
+
     return newItemId;
   }
 

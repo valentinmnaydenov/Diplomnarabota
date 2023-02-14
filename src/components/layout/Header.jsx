@@ -10,15 +10,17 @@ function Header() {
       <div className="header">
         <div className="container">
           <div className="d-flex justify-content-between align-items-center">
-            <Link className="btn btn-primary m-1" to="/" role="button">
-              Home
-            </Link>
-            <Link className="btn btn-primary m-1" to="/documents" role="button">
-              Documents
-            </Link>
-            <Link className="btn btn-primary m-1" to="/idcard" role="button">
-              IDcard
-            </Link>
+            <div className="d-flex">
+              <Link className="link me-4" to="/" role="button">
+                Home
+              </Link>
+              <Link className="link me-4" to="/documents" role="button">
+                Documents
+              </Link>
+              <Link className="link me-4" to="/idcard" role="button">
+                IDcard
+              </Link>
+            </div>
 
             <p>{provider ? <code>{provider.signerData.userAddress}</code> : 'Not connected'}</p>
           </div>

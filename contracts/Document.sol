@@ -133,12 +133,18 @@ contract Document is ReentrancyGuard {
   function approveApplication(uint256 newFormId) public {
     // require(roles[msg.sender] == Role.Admin, 'Only admins can approve applications');
     require(applicationForms[newFormId].status == Status.Pending, 'Invalid status');
-    // require(
-    //   docItemContract.balanceOf(applicationForms[newFormId].user) != 0,
-    //   'User already create their identity'
-    // );
+    require(
+      docItemContract.balanceOf(applicationForms[newFormId].user) == 0,
+      'User already create their identity'
+    );
+
     applicationForms[newFormId].status = Status.Approved;
-    docItemContract.mintItem(applicationForms[newFormId].user, 'my-token-uri');
+
+    docItemContract.mintItem(
+      applicationForms[newFormId].user,
+      applicationForms[newFormId].ipfsLink
+    );
+
     emit Approved(newFormId);
   }
 

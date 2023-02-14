@@ -30,35 +30,11 @@ class SDK {
     this.currentUser = address;
   }
 
-  async createdocItem(minter, tokenURI) {
-    const tx = await this.docItemContract.mintItem(minter, tokenURI);
-    await tx.wait();
-
-    return tx;
-  }
-
-  async transfer(from, to, tokenId) {
-    const isNFT = await this.docItemContract.nfts(tokenId);
-    if (!isNFT) {
-      console.error(`Token with ID ${tokenId} is not a valid NFT`);
-      return;
-    }
-
-    const tx = await this.docItemContract.transfer(from, to, tokenId);
-    await tx.wait();
-
-    return tx;
-  }
-
-  async balanceOf() {
-    return await this.docItemContract.balanceOf(this.currentUser);
-  }
-
-  createApplicationForm = async (name, egn, tokenURI, user) => {
+  async createApplicationForm(name, egn, tokenURI, user) {
     const tx = await this.documentContract.createApplicationForm(name, tokenURI, egn, user);
     await tx.wait();
     return tx;
-  };
+  }
 
   async getApplicationFormsIds() {
     let formIds = [];
@@ -120,13 +96,6 @@ class SDK {
     return tx;
   }
 
-  async updateApplicationFormStatus(formId, newStatus) {
-    const statusValue = this.documentContract.Status[newStatus];
-    const tx = await this.documentContract.updateApplicationFormStatus(formId, statusValue);
-    await tx.wait();
-    return tx;
-  }
-
   async createIDCard(
     id,
     phoneNumber,
@@ -138,7 +107,7 @@ class SDK {
     height,
     dateOfIssue,
   ) {
-    const tx = await this.contract.createIDCard(
+    const tx = await this.documentContract.createIDCard(
       id,
       phoneNumber,
       nationality,

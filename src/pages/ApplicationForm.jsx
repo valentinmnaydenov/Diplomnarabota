@@ -164,7 +164,7 @@ const ApplicationForm = ({ sdk }) => {
               <h1>Application Form</h1>
               {userHasMinted ? (
                 <p className="alert alert-info my-6">
-                  User has an identity. Go to <Link to="idcard">idcard creation</Link>
+                  User has an identity. Go to <Link to="/idcard">idcard creation</Link>
                 </p>
               ) : formPending ? (
                 <p className="alert alert-info my-6">Please wait for admin to approve the form.</p>

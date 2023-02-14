@@ -10,7 +10,7 @@ const Home = ({ sdk }) => {
           You can use this Dapp to create documents like ID, Passport, Car License
         </p>
         <div className="mt-3">
-          <Link className="btn btn-primary" to="application-form">
+          <Link className="btn btn-primary" to="/application-form">
             Start here
           </Link>
         </div>

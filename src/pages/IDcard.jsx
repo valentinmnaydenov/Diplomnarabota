@@ -16,7 +16,7 @@ const IDcard = ({ sdk }) => {
       const formData = await sdk.getApplicationFormData(latestFormId);
       const formStatus = await sdk.approveApplicationForm(latestFormId);
 
-      if (formStatus === 'rejected') {
+      if (formStatus === 2) {
         console.error('Form rejected');
         return;
       }

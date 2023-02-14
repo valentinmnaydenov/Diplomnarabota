@@ -161,7 +161,7 @@ const ApplicationForm = ({ sdk }) => {
           ) : (
             <>
               <h1>Application Form</h1>
-              {balance > 0 ? (
+              {balance < 0 ? (
                 <p className="text-center my-6">User has an identity</p>
               ) : (
                 <div className="mt-4">

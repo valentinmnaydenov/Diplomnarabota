@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import Button from '../components/ui/Button';
 
 const Documents = ({ sdk }) => {
   const [forms, setForms] = useState([]);
   const [loadingForms, setLoadingForms] = useState(false);
+  const [buttonLoading, setButtonLoading] = useState(false);
 
   const getApplicationForms = useCallback(async () => {
     if (!sdk) return;
@@ -11,6 +13,7 @@ const Documents = ({ sdk }) => {
 
     const formIds = await sdk.getApplicationFormsIds();
 
+    // Check if there are some forms
     if (formIds.length > 0) {
       const formPromises = formIds.map(formId => sdk.getApplicationFormData(formId));
       const forms = await Promise.all(formPromises);
@@ -26,37 +29,34 @@ const Documents = ({ sdk }) => {
   }, [sdk, getApplicationForms]);
 
   const handleApproveForm = async formId => {
+    setButtonLoading(true);
     try {
       await sdk.approveApplicationForm(formId);
-      const updatedForm = await sdk.getApplicationFormData(formId);
-      console.log(
-        'Form before update:',
-        forms.find(form => form.id === formId),
-      );
-      const updatedForms = forms.filter(form => form.id !== formId);
-      setForms(updatedForms);
+      getApplicationForms();
     } catch (error) {
       console.error(error);
+    } finally {
+      setButtonLoading(false);
     }
   };
 
   const handleRejectForm = async formId => {
+    setButtonLoading(true);
     try {
       await sdk.rejectApplicationForm(formId);
-      const updatedForm = await sdk.getApplicationFormData(formId);
-
-      const updatedForms = forms.filter(form => form.id !== formId || form.status !== 'rejected');
-      setForms(updatedForms);
+      getApplicationForms();
     } catch (error) {
       console.error(error);
+    } finally {
+      setButtonLoading(false);
     }
   };
 
-  const filteredForms = forms.filter(form => form.status === 'approved');
+  const statusArray = ['Approved', 'Pending', 'Rejected'];
 
   return (
-    <div className="container py-5">
-      <h1>Documents Page</h1>
+    <div className="container my-5 py-6">
+      <h1 className="mb-6">Documents Page</h1>
       {loadingForms ? (
         <p className="text-center">Loading...</p>
       ) : (
@@ -64,49 +64,49 @@ const Documents = ({ sdk }) => {
           <thead>
             <tr>
               <th>Name</th>
-              <th>EGN</th>
+              <th className="text-end">EGN</th>
               <th>Status</th>
               <th>Image</th>
-              <th>Actions</th>
+              <th className="text-end">Actions</th>
             </tr>
           </thead>
           {forms.length > 0 ? (
             <tbody>
-              {forms
-                .filter(form => form.status !== 0)
-                .map(form => (
-                  <tr key={form.id}>
-                    <td>{form.name}</td>
-                    <td>{form.egn}</td>
-                    <td>
-                      {typeof form.status === 'string'
-                        ? form.status === 'approved'
-                          ? 'Approved'
-                          : form.status === 'rejected'
-                          ? 'Rejected'
-                          : 'Pending'
-                        : form.status === 0
-                        ? 'Approved'
-                        : form.status === 2
-                        ? 'Rejected'
-                        : 'Pending'}
-                    </td>
-                    <td>
-                      <img src={form.imageUrl} alt="" style={{ height: '100px', width: '100px' }} />
-                    </td>
-                    <td>
-                      <button
-                        className="btn btn-success mr-2"
-                        onClick={() => handleApproveForm(form.id)}
-                      >
-                        Approve
-                      </button>
-                      <button className="btn btn-danger" onClick={() => handleRejectForm(form.id)}>
-                        Reject
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+              {forms.map(form => (
+                <tr key={form.id}>
+                  <td>{form.name}</td>
+                  <td className="text-end">{form.egn}</td>
+                  <td>{statusArray[form.status]}</td>
+                  <td>
+                    <img
+                      className="img-fluid"
+                      src={form.imageUrl}
+                      alt=""
+                      style={{ height: '50px', width: '50px' }}
+                    />
+                  </td>
+                  <td>
+                    {form.status === 1 ? (
+                      <div className="d-flex justify-content-end">
+                        <Button
+                          loading={buttonLoading}
+                          className="btn btn-success me-3"
+                          onClick={() => handleApproveForm(form.id)}
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          loading={buttonLoading}
+                          className="btn btn-danger"
+                          onClick={() => handleRejectForm(form.id)}
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    ) : null}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           ) : null}
         </table>

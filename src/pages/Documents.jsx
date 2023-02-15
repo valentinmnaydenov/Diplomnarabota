@@ -11,7 +11,6 @@ const Documents = ({ sdk }) => {
 
     const formIds = await sdk.getApplicationFormsIds();
 
-    // Check if there are some forms
     if (formIds.length > 0) {
       const formPromises = formIds.map(formId => sdk.getApplicationFormData(formId));
       const forms = await Promise.all(formPromises);
@@ -52,6 +51,8 @@ const Documents = ({ sdk }) => {
       console.error(error);
     }
   };
+
+  const filteredForms = forms.filter(form => form.status === 'approved');
 
   return (
     <div className="container py-5">
@@ -94,22 +95,15 @@ const Documents = ({ sdk }) => {
                       <img src={form.imageUrl} alt="" style={{ height: '100px', width: '100px' }} />
                     </td>
                     <td>
-                      {form.status === undefined && (
-                        <>
-                          <button
-                            className="btn btn-success mr-2"
-                            onClick={() => handleApproveForm(form.id)}
-                          >
-                            Approve
-                          </button>
-                          <button
-                            className="btn btn-danger"
-                            onClick={() => handleRejectForm(form.id)}
-                          >
-                            Reject
-                          </button>
-                        </>
-                      )}
+                      <button
+                        className="btn btn-success mr-2"
+                        onClick={() => handleApproveForm(form.id)}
+                      >
+                        Approve
+                      </button>
+                      <button className="btn btn-danger" onClick={() => handleRejectForm(form.id)}>
+                        Reject
+                      </button>
                     </td>
                   </tr>
                 ))}

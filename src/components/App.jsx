@@ -17,11 +17,13 @@ function App() {
   const [sdk, setSdk] = useState();
 
   useEffect(() => {
-    if (provider) {
+    const getSDK = async () => {
       const _sdk = new SDK(provider);
-      _sdk.initContracts();
+      await _sdk.initContracts();
       setSdk(_sdk);
-    }
+    };
+
+    provider && getSDK();
   }, [provider]);
 
   return (

@@ -109,81 +109,32 @@ contract Document is ReentrancyGuard {
     emit CreatedApplicationForm(newFormId, newApplicationForm);
   }
 
-  // function updateApplicationForm(
-  //   uint256 formId,
-  //   string memory name,
-  //   string memory ipfsLink,
-  //   uint256 egn,
-  //   address user
-  // ) public {
-  //   require(formId < applicationFormCounter, 'Form does not exist');
-  //   require(applicationForms[formId].user == msg.sender, 'Only form owner can update the form');
-  //   require(applicationForms[formId].status == Status.Pending, 'Form must be pending to update');
-
-  //   ApplicationForm storage form = applicationForms[formId];
-  //   form.name = name;
-  //   form.ipfsLink = ipfsLink;
-  //   form.egn = egn;
-  //   form.user = user;
-  // }
   function getApplicationFormsIdsLenght() external view returns (uint256) {
     return applicationFormsIds.length;
   }
 
   function approveApplication(uint256 newFormId) public {
-    // require(roles[msg.sender] == Role.Admin, 'Only admins can approve applications');
+    require(roles[msg.sender] == Role.Admin, 'Only admins can approve applications');
     require(applicationForms[newFormId].status == Status.Pending, 'Invalid status');
-    // require(
-    //   docItemContract.balanceOf(applicationForms[newFormId].user) != 0,
-    //   'User already create their identity'
-    // );
+    require(
+      docItemContract.balanceOf(applicationForms[newFormId].user) != 0,
+      'User already create their identity'
+    );
     applicationForms[newFormId].status = Status.Approved;
     docItemContract.mintItem(applicationForms[newFormId].user, 'my-token-uri');
     emit Approved(newFormId);
   }
 
   function rejectApplication(uint256 newFormId) public {
-    // require(roles[msg.sender] == Role.Admin, 'Only admins can reject applications');
+    require(roles[msg.sender] == Role.Admin, 'Only admins can reject applications');
     require(applicationForms[newFormId].status == Status.Pending, 'Invalid status');
     applicationForms[newFormId].status = Status.Rejected;
     emit Rejected(newFormId);
   }
 
-  // function pendingApplication(uint256 _applicationId) public {
-  //   // require(roles[msg.sender] == Role.Admin, 'Only admins can mark applications as pending');
-  //   require(applicationForms[_applicationId].status != Status.Pending, 'Invalid status');
-
-  //   ApplicationForm storage form = applicationForms[_applicationId];
-  //   require(docItemContract.balanceOf(form.user) == 0, 'Token has already been minted');
-
-  //   form.status = Status.Pending;
-  //   emit Pending(_applicationId);
-  // }
-
-  // function updateApplicationFormStatus(uint256 _applicationId, Status _newStatus) public {
-  //   require(roles[msg.sender] == Role.Admin, 'Only admins can update application form status');
-
-  //   ApplicationForm storage applicationForm = applicationForms[_applicationId];
-
-  //   if (_newStatus == Status.Approved) {
-  //     require(applicationForm.status == Status.Pending, 'Invalid status');
-  //     applicationForm.status = _newStatus;
-  //     emit Approved(_applicationId);
-  //   } else if (_newStatus == Status.Rejected) {
-  //     require(applicationForm.status == Status.Pending, 'Invalid status');
-  //     applicationForm.status = _newStatus;
-  //     emit Rejected(_applicationId);
-  //   } else if (_newStatus == Status.Pending) {
-  //     require(applicationForm.status != Status.Pending, 'Invalid status');
-  //     applicationForm.status = _newStatus;
-  //     emit Pending(_applicationId);
-  //   }
-  // }
-
-  event CreatedIDCard(uint256 _applicationId, uint256 idCardsIds, IDCardData idcard);
+  event CreatedIDCard(uint256 newFormId, uint256 idCardsIds, IDCardData idcard);
 
   function createIDCard(
-    uint256 _applicationId,
     uint256 id,
     string memory phoneNumber,
     string memory nationality,
@@ -215,6 +166,6 @@ contract Document is ReentrancyGuard {
     inUseIdentityCardNumber[identityCardNumber] = true;
     idCardsIds.push(newFormId);
 
-    emit CreatedIDCard(_applicationId, newFormId, newIDCardData);
+    emit CreatedIDCard(newFormId, newFormId, newIDCardData);
   }
 }

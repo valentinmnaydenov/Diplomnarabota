@@ -150,6 +150,17 @@ class SDK {
       // nftId: nftId.toNumber(),
     };
   }
+  async approveIDCard(idCardId) {
+    const tx = await this.documentContract.approveIDCard(idCardId);
+    await tx.wait();
+    return tx;
+  }
+
+  async rejectIDcard(idCardId) {
+    const tx = await this.documentContract.rejectIDCard(idCardId);
+    await tx.wait();
+    return tx;
+  }
 
   async getAllMintedNftIds() {
     const totalSupply = await this.docItemContract.totalSupply();

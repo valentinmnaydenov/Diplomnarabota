@@ -23,6 +23,7 @@ const IDcard = ({ sdk }) => {
     eyeColor: '',
     height: '',
     dateOfIssue: '',
+    status: 'pending',
   });
 
   const handleIDCardChange = e => {

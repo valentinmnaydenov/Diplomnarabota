@@ -31,23 +31,4 @@ contract DocItem is ERC721URIStorage, IERC721Enumerable {
     super._transfer(_from, _to, _tokenId);
     nfts[_tokenId] = true;
   }
-
-  function tokenOfOwnerByIndex(address owner, uint256 index)
-    public
-    view
-    override
-    returns (uint256 tokenId)
-  {
-    require(index < balanceOf(owner), 'ERC721Enumerable: owner index out of bounds');
-    return tokenOfOwnerByIndex(owner, index);
-  }
-
-  function totalSupply() public view override returns (uint256) {
-    return _tokenIds.current();
-  }
-
-  function tokenByIndex(uint256 index) public view override returns (uint256) {
-    require(index < totalSupply(), 'ERC721Enumerable: global index out of bounds');
-    return tokenByIndex(index);
-  }
 }

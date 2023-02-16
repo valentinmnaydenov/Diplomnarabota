@@ -12,6 +12,7 @@ const IDcard = ({ sdk }) => {
   const [dateOfIssueError, setDateOfIssueError] = useState(null);
   const [height, setHeight] = useState('');
   const [heightError, setHeightError] = useState('');
+  const [userIdentity, setUserIdentity] = useState({});
 
   const [idCardData, setIdCardData] = useState({
     id: '',
@@ -60,6 +61,15 @@ const IDcard = ({ sdk }) => {
       try {
         const balance = await sdk.docItemContract.balanceOf(sdk.currentUser);
         setHasUserIdentity(Number(balance.toString()) > 0);
+
+        if (Number(balance.toString()) > 0) {
+          const tokenId = await sdk.docItemContract.tokenOfOwnerByIndex(sdk.currentUser, 0);
+          const tokenURI = await sdk.docItemContract.tokenURI(tokenId);
+          const metadata = await sdk.getTokenMetadataByURI(tokenURI);
+          setUserIdentity({
+            ...metadata,
+          });
+        }
       } catch (error) {
         console.log(error);
       } finally {
@@ -123,16 +133,27 @@ const IDcard = ({ sdk }) => {
     return !hasError;
   };
 
-  console.log(idCardData);
   return (
-    <div className="container py-5">
+    <div className="container my-5 py-6">
       <h1>Create your ID card</h1>
 
       {loadingData ? (
-        <p className="text-center">Loading...</p>
+        <p className="text-center my-5">Loading...</p>
       ) : hasUserIdentity ? (
-        <div>
-          <div className="form-group">
+        <div className="mt-5">
+          {Object.keys(userIdentity).length > 0 ? (
+            <div className="row">
+              <div className="col-4">
+                <img className="img-fluid" src={userIdentity.imageUrl} alt="" />
+              </div>
+              <div className="col-8">
+                <h2>{userIdentity.name}</h2>
+                <p>{userIdentity.egn}</p>
+              </div>
+            </div>
+          ) : null}
+
+          <div className="form-group mt-5">
             <label htmlFor="phoneNumber">Phone number</label>
             <input
               type="text"

@@ -124,7 +124,7 @@ contract Document is ReentrancyGuard {
 
     applicationForms[newFormId].status = Status.Approved;
 
-    docItemContract.mintItem(
+    docItemContract.safeMint(
       applicationForms[newFormId].user,
       applicationForms[newFormId].ipfsLink
     );

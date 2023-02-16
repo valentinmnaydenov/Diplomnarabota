@@ -14,7 +14,7 @@ const ApplicationForm = ({ sdk }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const [showButtons, setShowButtons] = useState(false);
-  const [loadingForms, setLoadingForms] = useState(false);
+  const [loadingForms, setLoadingForms] = useState(true);
   const [balance, setBalance] = useState(0);
   const [formPending, setFormPending] = useState(false);
 
@@ -25,9 +25,9 @@ const ApplicationForm = ({ sdk }) => {
     });
   };
 
-  const storeNFT = async (name, imageFile) => {
+  const storeNFT = async (name, imageFile, egn) => {
     const client = new NFTStorage({ token: process.env.REACT_APP_NFT_STORAGE_KEY });
-    const metadata = await client.store({ name, image: imageFile, description: '' });
+    const metadata = await client.store({ name, image: imageFile, description: '', egn });
 
     return metadata;
   };
@@ -73,7 +73,7 @@ const ApplicationForm = ({ sdk }) => {
       return;
     }
 
-    let balance = await sdk.balanceOf(sdk.currentUser);
+    let balance = await sdk.docItemContract.balanceOf(sdk.currentUser);
     if (!sdk.currentUser) {
       setHasError(true);
       setErrorMessage("You don't have an identity. Please log in.");
@@ -90,7 +90,7 @@ const ApplicationForm = ({ sdk }) => {
       const { applicationName, egn } = formState;
       const imageFile = document.querySelector("input[name='nftImage']").files[0];
 
-      const metadata = await storeNFT(applicationName, imageFile);
+      const metadata = await storeNFT(applicationName, imageFile, egn);
       const tokenURI = metadata.url;
       await sdk.createApplicationForm(applicationName, egn, tokenURI, sdk.currentUser).then(() => {
         setShowButtons(true);

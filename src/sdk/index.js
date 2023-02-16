@@ -30,12 +30,6 @@ class SDK {
     this.currentUser = address;
   }
 
-  // async transferToken(tokenId, to) {
-  //   const tx = await this.docItemContract.transfer(this.currentUser, to, tokenId);
-  //   await tx.wait();
-  //   return tx;
-  // }
-
   async createApplicationForm(name, egn, tokenURI, user) {
     const tx = await this.documentContract.createApplicationForm(name, tokenURI, egn, user);
     await tx.wait();
@@ -87,6 +81,24 @@ class SDK {
       ...applicationForm,
       imageUrl,
       name,
+    };
+  }
+
+  async getTokenMetadataByURI(uri) {
+    const cid = uri.split('ipfs://')[1];
+    const tokenURIGatway = `https://ipfs.io/ipfs/${cid}`; // fixed here
+    const metadata = await axios(tokenURIGatway);
+    const {
+      data: { image, name, egn },
+    } = metadata;
+
+    const cidImage = image.split('ipfs://')[1];
+    const imageUrl = `https://ipfs.io/ipfs/${cidImage}`;
+
+    return {
+      name,
+      imageUrl,
+      egn,
     };
   }
 

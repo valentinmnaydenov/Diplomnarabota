@@ -20,6 +20,9 @@ function Header() {
               <Link className="link me-4" to="/idcard" role="button">
                 IDcard
               </Link>
+              <Link className="link me-4" to="/idcardadmin" role="button">
+                IDCardAdmin
+              </Link>
             </div>
 
             <p>{provider ? <code>{provider.signerData.userAddress}</code> : 'Not connected'}</p>

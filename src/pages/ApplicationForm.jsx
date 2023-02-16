@@ -21,7 +21,7 @@ const ApplicationForm = ({ sdk }) => {
   const handleInputChange = e => {
     setFormState({
       ...formState,
-      [e.target.name]: e.target.value,
+      [e.target.name]: e.target.valAue,
     });
   };
 

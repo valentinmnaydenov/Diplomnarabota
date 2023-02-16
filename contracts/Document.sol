@@ -48,6 +48,7 @@ contract Document is ReentrancyGuard {
     string eyeColor;
     string height;
     string dateOfIssue;
+    Status status;
   }
 
   constructor(address _docItemAddress) {
@@ -117,16 +118,10 @@ contract Document is ReentrancyGuard {
     require(roles[msg.sender] == Role.Admin, 'Only admins can approve applications');
     require(applicationForms[newFormId].status == Status.Pending, 'Invalid status');
     require(
-<<<<<<< HEAD
-      docItemContract.balanceOf(applicationForms[newFormId].user) != 0,
-      'User already create their identity'
-    );
-=======
       docItemContract.balanceOf(applicationForms[newFormId].user) == 0,
       'User already create their identity'
     );
 
->>>>>>> e02949e644fd55c45122d4682fd7e0adefb2933a
     applicationForms[newFormId].status = Status.Approved;
 
     docItemContract.mintItem(
@@ -171,7 +166,8 @@ contract Document is ReentrancyGuard {
       permanentAddress: permanentAddress,
       eyeColor: eyeColor,
       height: height,
-      dateOfIssue: dateOfIssue
+      dateOfIssue: dateOfIssue,
+      status: Status.Pending
     });
 
     idCards[newFormId] = newIDCardData;
@@ -179,5 +175,21 @@ contract Document is ReentrancyGuard {
     idCardsIds.push(newFormId);
 
     emit CreatedIDCard(newFormId, newFormId, newIDCardData);
+  }
+
+  function approveIDCard(uint256 idCardId) public {
+    require(roles[msg.sender] == Role.Admin, 'Only admins can approve ID cards');
+    require(idCards[idCardId].status == Status.Pending, 'Invalid status');
+
+    idCards[idCardId].status = Status.Approved;
+
+    emit Approved(idCardId);
+  }
+
+  function rejectIDCard(uint256 idCardId) public {
+    require(roles[msg.sender] == Role.Admin, 'Only admins can reject ID cards');
+    require(idCards[idCardId].status == Status.Pending, 'Invalid status');
+    idCards[idCardId].status = Status.Rejected;
+    emit Rejected(idCardId);
   }
 }

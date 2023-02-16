@@ -30,6 +30,12 @@ class SDK {
     this.currentUser = address;
   }
 
+  // async transferToken(tokenId, to) {
+  //   const tx = await this.docItemContract.transfer(this.currentUser, to, tokenId);
+  //   await tx.wait();
+  //   return tx;
+  // }
+
   async createApplicationForm(name, egn, tokenURI, user) {
     const tx = await this.documentContract.createApplicationForm(name, tokenURI, egn, user);
     await tx.wait();
@@ -129,7 +135,8 @@ class SDK {
   }
 
   async getIDCardData(idCardId) {
-    const idCard = await this.contract.idCards(idCardId);
+    const idCard = await this.documentContract.idCards(idCardId);
+    // const nftId = await this.docItemContract.tokenOfOwnerByIndex(idCard.user, idCardId);
     return {
       id: idCard.id.toNumber(),
       phoneNumber: idCard.phoneNumber,
@@ -140,7 +147,20 @@ class SDK {
       eyeColor: idCard.eyeColor,
       height: idCard.height,
       dateOfIssue: idCard.dateOfIssue,
+      // nftId: nftId.toNumber(),
     };
+  }
+
+  async getAllMintedNftIds() {
+    const totalSupply = await this.docItemContract.totalSupply();
+    const nftIds = [];
+
+    for (let i = 0; i < totalSupply; i++) {
+      const id = await this.docItemContract.tokenByIndex(i);
+      nftIds.push(id.toNumber());
+    }
+
+    return nftIds;
   }
 }
 

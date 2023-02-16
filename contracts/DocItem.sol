@@ -28,11 +28,8 @@ contract DocItem is ERC721, ERC721Enumerable, ERC721URIStorage {
     address from,
     address to,
     uint256 tokenId
-  ) internal pure override(ERC721, ERC721Enumerable) {
-    require(
-      from == address(0) || to == address(0),
-      'This a Identity token. It cannot be transferred.'
-    );
+  ) internal override(ERC721, ERC721Enumerable) {
+    super._beforeTokenTransfer(from, to, tokenId);
   }
 
   function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {

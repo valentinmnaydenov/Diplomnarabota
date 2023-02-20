@@ -115,6 +115,7 @@ class SDK {
   }
 
   async createIDCard(
+    identityID,
     id,
     phoneNumber,
     nationality,
@@ -126,6 +127,7 @@ class SDK {
     dateOfIssue,
   ) {
     const tx = await this.documentContract.createIDCard(
+      identityID,
       id,
       phoneNumber,
       nationality,
@@ -142,13 +144,28 @@ class SDK {
   }
 
   async getIDCardsIds() {
-    const idCardsIds = await this.contract.getIDCardsIds();
-    return idCardsIds.map(id => id.toNumber());
+    let cardIds = [];
+
+    const cardsLength = await this.documentContract.getIdCardsIdsLength();
+
+    if (cardsLength === 0) {
+      return cardIds;
+    }
+
+    const promisesArray = [];
+
+    for (let i = 0; i < cardsLength; i++) {
+      promisesArray.push(this.documentContract.idCardsIds(i));
+    }
+
+    cardIds = await Promise.all(promisesArray);
+    cardIds = cardIds.map(id => id.toNumber());
+
+    return cardIds;
   }
 
   async getIDCardData(idCardId) {
     const idCard = await this.documentContract.idCards(idCardId);
-    // const nftId = await this.docItemContract.tokenOfOwnerByIndex(idCard.user, idCardId);
     return {
       id: idCard.id.toNumber(),
       phoneNumber: idCard.phoneNumber,
@@ -159,9 +176,9 @@ class SDK {
       eyeColor: idCard.eyeColor,
       height: idCard.height,
       dateOfIssue: idCard.dateOfIssue,
-      // nftId: nftId.toNumber(),
     };
   }
+
   async approveIDCard(idCardId) {
     const tx = await this.documentContract.approveIDCard(idCardId);
     await tx.wait();

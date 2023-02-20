@@ -39,6 +39,7 @@ contract Document is ReentrancyGuard {
   }
 
   struct IDCardData {
+    uint256 identityID;
     uint256 id;
     string phoneNumber;
     string nationality;
@@ -139,9 +140,10 @@ contract Document is ReentrancyGuard {
     emit Rejected(newFormId);
   }
 
-  event CreatedIDCard(uint256 newFormId, uint256 idCardsIds, IDCardData idcard);
+  event CreatedIDCard(uint256 newCardId, IDCardData idcard);
 
   function createIDCard(
+    uint256 identityID,
     uint256 id,
     string memory phoneNumber,
     string memory nationality,
@@ -154,11 +156,12 @@ contract Document is ReentrancyGuard {
   ) public {
     require(!inUseIdentityCardNumber[identityCardNumber], 'Identity card number is already in use');
 
-    uint256 newFormId = idCardCounter;
+    uint256 newCardId = idCardCounter;
     idCardCounter++;
 
     IDCardData memory newIDCardData = IDCardData({
-      id: id,
+      identityID: identityID,
+      id: newCardId,
       phoneNumber: phoneNumber,
       nationality: nationality,
       dateOfBirth: dateOfBirth,
@@ -170,11 +173,15 @@ contract Document is ReentrancyGuard {
       status: Status.Pending
     });
 
-    idCards[newFormId] = newIDCardData;
+    idCards[newCardId] = newIDCardData;
     inUseIdentityCardNumber[identityCardNumber] = true;
-    idCardsIds.push(newFormId);
+    idCardsIds.push(newCardId);
 
-    emit CreatedIDCard(newFormId, newFormId, newIDCardData);
+    emit CreatedIDCard(newCardId, newIDCardData);
+  }
+
+  function getIdCardsIdsLength() external view returns (uint256) {
+    return idCardsIds.length;
   }
 
   function approveIDCard(uint256 idCardId) public {

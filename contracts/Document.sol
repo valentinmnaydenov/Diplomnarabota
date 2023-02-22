@@ -43,12 +43,12 @@ contract Document is ReentrancyGuard {
     uint256 id;
     string phoneNumber;
     string nationality;
-    string dateOfBirth;
+    uint256 dateOfBirth;
     uint256 identityCardNumber;
     string permanentAddress;
     string eyeColor;
     string height;
-    string dateOfIssue;
+    uint256 dateOfIssue;
     Status status;
   }
 
@@ -120,7 +120,7 @@ contract Document is ReentrancyGuard {
     require(applicationForms[newFormId].status == Status.Pending, 'Invalid status');
     require(
       docItemContract.balanceOf(applicationForms[newFormId].user) == 0,
-      'User already create their identity'
+      'User already create  identity'
     );
 
     applicationForms[newFormId].status = Status.Approved;
@@ -144,27 +144,28 @@ contract Document is ReentrancyGuard {
 
   function createIDCard(
     uint256 identityID,
-    uint256 id,
     string memory phoneNumber,
     string memory nationality,
-    string memory dateOfBirth,
+    uint256 dateofBirth,
     uint256 identityCardNumber,
     string memory permanentAddress,
     string memory eyeColor,
     string memory height,
-    string memory dateOfIssue
+    uint256 dateOfIssue
   ) public {
     require(!inUseIdentityCardNumber[identityCardNumber], 'Identity card number is already in use');
 
     uint256 newCardId = idCardCounter;
     idCardCounter++;
 
+    // Convert date of birth string to uint256
+
     IDCardData memory newIDCardData = IDCardData({
       identityID: identityID,
       id: newCardId,
       phoneNumber: phoneNumber,
       nationality: nationality,
-      dateOfBirth: dateOfBirth,
+      dateOfBirth: dateofBirth,
       identityCardNumber: identityCardNumber,
       permanentAddress: permanentAddress,
       eyeColor: eyeColor,
@@ -184,19 +185,19 @@ contract Document is ReentrancyGuard {
     return idCardsIds.length;
   }
 
-  function approveIDCard(uint256 idCardId) public {
+  function approveIDCard(uint256 newCardId) public {
     require(roles[msg.sender] == Role.Admin, 'Only admins can approve ID cards');
-    require(idCards[idCardId].status == Status.Pending, 'Invalid status');
+    require(idCards[newCardId].status == Status.Pending, 'Invalid status');
 
-    idCards[idCardId].status = Status.Approved;
+    idCards[newCardId].status = Status.Approved;
 
-    emit Approved(idCardId);
+    emit Approved(newCardId);
   }
 
-  function rejectIDCard(uint256 idCardId) public {
+  function rejectIDCard(uint256 newCardId) public {
     require(roles[msg.sender] == Role.Admin, 'Only admins can reject ID cards');
-    require(idCards[idCardId].status == Status.Pending, 'Invalid status');
-    idCards[idCardId].status = Status.Rejected;
-    emit Rejected(idCardId);
+    require(idCards[newCardId].status == Status.Pending, 'Invalid status');
+    idCards[newCardId].status = Status.Rejected;
+    emit Rejected(newCardId);
   }
 }

@@ -116,7 +116,6 @@ class SDK {
 
   async createIDCard(
     identityID,
-    id,
     phoneNumber,
     nationality,
     dateOfBirth,
@@ -126,9 +125,9 @@ class SDK {
     height,
     dateOfIssue,
   ) {
+    console.log(identityID, phoneNumber, nationality, dateOfBirth, identityCardNumber);
     const tx = await this.documentContract.createIDCard(
       identityID,
-      id,
       phoneNumber,
       nationality,
       dateOfBirth,
@@ -144,38 +143,44 @@ class SDK {
   }
 
   async getIDCardsIds() {
-    let cardIds = [];
+    let idcardIds = [];
 
-    const cardsLength = await this.documentContract.getIdCardsIdsLength();
+    const idcardsLength = await this.documentContract.getIdCardsIdsLength();
 
-    if (cardsLength === 0) {
-      return cardIds;
+    if (idcardsLength === 0) {
+      return idcardIds;
     }
 
     const promisesArray = [];
 
-    for (let i = 0; i < cardsLength; i++) {
+    for (let i = 0; i < idcardsLength; i++) {
       promisesArray.push(this.documentContract.idCardsIds(i));
     }
 
-    cardIds = await Promise.all(promisesArray);
-    cardIds = cardIds.map(id => id.toNumber());
+    idcardIds = await Promise.all(promisesArray);
+    idcardIds = idcardIds.map(id => id.toNumber());
 
-    return cardIds;
+    return idcardIds;
   }
 
   async getIDCardData(idCardId) {
-    const idCard = await this.documentContract.idCards(idCardId);
+    const promisesArray = [this.documentContract.idCards(idCardId)];
+    const [applicationIdcardRaw] = await Promise.all(promisesArray);
+    const idCard = {
+      id: applicationIdcardRaw.id.toString(),
+      phoneNumber: applicationIdcardRaw.phoneNumber,
+      nationality: applicationIdcardRaw.nationality,
+      dateOfBirth: applicationIdcardRaw.dateOfBirth,
+      identityCardNumber: applicationIdcardRaw.identityCardNumber.toNumber(),
+      permanentAddress: applicationIdcardRaw.permanentAddress,
+      eyeColor: applicationIdcardRaw.eyeColor,
+      height: applicationIdcardRaw.height,
+      dateOfIssue: applicationIdcardRaw.dateOfIssue,
+      status: applicationIdcardRaw.status,
+    };
+
     return {
-      id: idCard.id.toNumber(),
-      phoneNumber: idCard.phoneNumber,
-      nationality: idCard.nationality,
-      dateOfBirth: idCard.dateOfBirth,
-      identityCardNumber: idCard.identityCardNumber.toNumber(),
-      permanentAddress: idCard.permanentAddress,
-      eyeColor: idCard.eyeColor,
-      height: idCard.height,
-      dateOfIssue: idCard.dateOfIssue,
+      ...idCard,
     };
   }
 

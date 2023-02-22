@@ -12,11 +12,13 @@ const IDcard = ({ sdk }) => {
   const [addressError, setAddressError] = useState(null);
   const [dateOfIssueError, setDateOfIssueError] = useState(null);
   const [height, setHeight] = useState('');
+  const [eyeColor, seteyeColor] = useState('');
   const [heightError, setHeightError] = useState('');
   const [userIdentity, setUserIdentity] = useState({});
   const [identityID, setidentityID] = useState('');
   const [idcardPending, setidcardPending] = useState(false);
   const [loadingCards, setLoadingCards] = useState(true);
+  const [balance, setBalance] = useState(0);
 
   const [idCardData, setIdCardData] = useState({
     id: '',
@@ -77,35 +79,23 @@ const IDcard = ({ sdk }) => {
     try {
       setLoadingButton(true);
 
-      console.log('Calling getIDCardsIds...');
-      const idCardIds = await sdk.getIDCardsIds();
-      console.log('getIDCardsIds result:', idCardIds);
-
-      const pendingIdCard = idCardIds.find(
-        idCardId => idCardId.user === sdk.currentUser && idCardId.status === 'pending',
+      // if (validateForm()) {
+      console.log('Calling createIDCard...');
+      const dateOfBirth = new Date(idCardData.dateOfBirth);
+      console.log(typeof dateOfBirth);
+      await sdk.createIDCard(
+        identityID,
+        idCardData.phoneNumber,
+        idCardData.nationality,
+        dateOfBirth.getTime(),
+        idCardData.identityCardNumber,
+        idCardData.permanentAddress,
+        idCardData.eyeColor,
+        idCardData.height,
+        new Date(idCardData.dateOfIssue).getTime(),
       );
-
-      if (pendingIdCard) {
-        console.log('There is a pending ID card. Aborting createIdcard call.');
-        return;
-      }
-
-      if (validateForm()) {
-        console.log('Calling createIDCard...');
-        await sdk.createIDCard(
-          identityID,
-          idCardData.id,
-          idCardData.phoneNumber,
-          idCardData.nationality,
-          idCardData.dateOfBirth,
-          idCardData.identityCardNumber,
-          idCardData.permanentAddress,
-          idCardData.eyeColor,
-          idCardData.height,
-          idCardData.dateOfIssue,
-        );
-        console.log('createIDCard call completed.');
-      }
+      console.log('createIDCard call completed.');
+      // }
     } catch (e) {
       console.log('Error:', e);
     } finally {
@@ -168,9 +158,15 @@ const IDcard = ({ sdk }) => {
     sdk && getIdCardData();
   }, [sdk, getIdCardData]);
 
+  // const userHasMinted = balance > 0;
+
   return (
     <div className="container my-5 py-6">
       <h1>Create your ID card</h1>
+      {/* {userHasMinted ? (
+        <p className='alert alert-info my-6'>
+            User has an identity
+        </p> */}
       {loadingData ? (
         <p className="text-center my-5">Loading...</p>
       ) : hasUserIdentity ? (
@@ -255,10 +251,13 @@ const IDcard = ({ sdk }) => {
             <div className="form-group">
               <label htmlFor="eyeColor">Eye color</label>
               <input
-                onChange={handleIDCardChange}
                 type="text"
                 className="form-control"
                 id="eyeColor"
+                name="eyeColor"
+                value={idCardData.eyeColor}
+                onChange={handleIDCardChange}
+                required
               />
             </div>
             <div className="form-group">

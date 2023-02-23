@@ -163,10 +163,7 @@ const IDcard = ({ sdk }) => {
   return (
     <div className="container my-5 py-6">
       <h1>Create your ID card</h1>
-      {/* {userHasMinted ? (
-        <p className='alert alert-info my-6'>
-            User has an identity
-        </p> */}
+
       {loadingData ? (
         <p className="text-center my-5">Loading...</p>
       ) : hasUserIdentity ? (

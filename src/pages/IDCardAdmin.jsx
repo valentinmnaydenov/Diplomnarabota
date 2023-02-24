@@ -7,6 +7,7 @@ const IDCardAdmin = ({ sdk }) => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [userIdentity, setUserIdentity] = useState({});
   const [identityID, setidentityID] = useState('');
+  const [metadataAvailable, setMetadataAvailable] = useState(false);
 
   const getIDCards = useCallback(async () => {
     if (!sdk) return;
@@ -23,26 +24,27 @@ const IDCardAdmin = ({ sdk }) => {
         try {
           const tokenId = await sdk.docItemContract.tokenOfOwnerByIndex(sdk.currentUser, 0);
           const tokenURI = await sdk.docItemContract.tokenURI(tokenId);
-          const metadata = await sdk.getTokenMetadataByURI(tokenURI);
+          metadata = await sdk.getTokenMetadataByURI(tokenURI);
+          setMetadataAvailable(true);
           setidentityID(tokenId);
         } catch (error) {
           console.log(error);
         } finally {
           setLoadingIdCards(false);
+          return {
+            ...idCard,
+            name: metadata?.name,
+            imageUrl: metadata?.imageUrl,
+            egn: metadata?.egn,
+          };
         }
-        return {
-          ...idCard,
-          name: metadata?.name,
-          imageUrl: metadata?.imageUrl,
-          egn: metadata?.egn,
-        };
       });
       const idCards = await Promise.all(idCardPromises);
       setIdCards(idCards);
     }
 
     setLoadingIdCards(false);
-  }, [sdk]);
+  }, [sdk, metadataAvailable]);
 
   useEffect(() => {
     sdk && getIDCards();
@@ -111,16 +113,12 @@ const IDCardAdmin = ({ sdk }) => {
                   <td>{idCard.eyeColor}</td>
                   <td>{idCard.height}</td>
                   <td>{new Date(Number(idCard.dateOfIssue)).toLocaleDateString()}</td>
-                  <td>{Object.keys(userIdentity).length > 0 ? userIdentity.documentType : '-'}</td>
-                  <td>{idCard.userMetadata?.name || idCard.name || '-'}</td>
-                  <td>{idCard.userMetadata?.egn || idCard.egn || '-'}</td>
+                  {/* <td>{Object.keys(userIdentity).length > 0 ? userIdentity.documentType : '-'}</td> */}
+                  <td>{idCard.name || '-'}</td>
+                  <td>{idCard.egn || '-'}</td>
                   <td>
-                    {idCard.userMetadata?.imageUrl || idCard.imageUrl ? (
-                      <img
-                        src={idCard.userMetadata?.imageUrl || idCard.imageUrl}
-                        alt="ID card photo"
-                        width="100"
-                      />
+                    {console.log(idCard.imageUrl) ? (
+                      <img src={idCard.imageUrl} alt="ID card photo" width="100" />
                     ) : (
                       '-'
                     )}

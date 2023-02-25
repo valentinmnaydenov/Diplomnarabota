@@ -85,6 +85,9 @@ const IDCardAdmin = ({ sdk }) => {
         <table className="table">
           <thead>
             <tr>
+              <th>Name</th>
+              <th>EGN</th>
+              <th>Photo</th>
               <th>Phone umber</th>
               <th>Status</th>
               <th>Nationality</th>
@@ -94,9 +97,6 @@ const IDCardAdmin = ({ sdk }) => {
               <th>EyeColor</th>
               <th>Height</th>
               <th>Dateofissue</th>
-              <th>Name</th>
-              <th>EGN</th>
-              <th>Photo</th>
               <th className="text-end">Actions</th>
             </tr>
           </thead>
@@ -104,6 +104,15 @@ const IDCardAdmin = ({ sdk }) => {
             <tbody>
               {idCards.map(idCard => (
                 <tr key={idCard.id}>
+                  <td>{idCard.name || '-'}</td>
+                  <td>{idCard.egn || '-'}</td>
+                  <td>
+                    {console.log(idCard.imageUrl) ? (
+                      <img src={idCard.imageUrl} alt="ID card photo" width="100" />
+                    ) : (
+                      '-'
+                    )}
+                  </td>
                   <td>{idCard.phoneNumber}</td>
                   <td>{statusArray[idCard.status]}</td>
                   <td>{idCard.nationality}</td>
@@ -114,15 +123,7 @@ const IDCardAdmin = ({ sdk }) => {
                   <td>{idCard.height}</td>
                   <td>{new Date(Number(idCard.dateOfIssue)).toLocaleDateString()}</td>
                   {/* <td>{Object.keys(userIdentity).length > 0 ? userIdentity.documentType : '-'}</td> */}
-                  <td>{idCard.name || '-'}</td>
-                  <td>{idCard.egn || '-'}</td>
-                  <td>
-                    {console.log(idCard.imageUrl) ? (
-                      <img src={idCard.imageUrl} alt="ID card photo" width="100" />
-                    ) : (
-                      '-'
-                    )}
-                  </td>
+
                   <td>
                     {idCard.status === 1 ? (
                       <div className="d-flex justify-content-end">

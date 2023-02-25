@@ -158,141 +158,159 @@ const IDcard = ({ sdk }) => {
     sdk && getIdCardData();
   }, [sdk, getIdCardData]);
 
-  // const userHasMinted = balance > 0;
+  const userHasMinted = balance > 0;
 
   return (
     <div className="container my-5 py-6">
-      <h1>Create your ID card</h1>
+      <div className="row">
+        <div className="col-6 offset-3">
+          {loadingData ? <p className="text-center">Loading...</p> : <></>}
+          <div className="container my-5 py-6">
+            <h1>Create your ID card</h1>
+            {userHasMinted ? (
+              <p className="alert alert-info my-6">User has an identity</p>
+            ) : idcardPending ? (
+              <p className="alert alert-info my-6">Wait for the Admin to approve</p>
+            ) : null}
+            {loadingData ? (
+              <p className="text-center my-5">Loading...</p>
+            ) : hasUserIdentity ? (
+              <div className="mt-5">
+                {Object.keys(userIdentity).length > 0 ? (
+                  <div className="row">
+                    <div className="col-4">
+                      <img className="img-fluid" src={userIdentity.imageUrl} alt="" />
+                    </div>
+                    <div className="col-8">
+                      <h2>{userIdentity.name}</h2>
+                      <p>{userIdentity.egn}</p>
+                      {idcardPending ? (
+                        <p>Your ID card is pending approval from the admin.</p>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : null}
+                <form onSubmit={handleFormSubmit}>
+                  <div className="form-group mt-5">
+                    <label htmlFor="phoneNumber">Phone number</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="phoneNumber"
+                      name="phoneNumber"
+                      value={idCardData.phoneNumber}
+                      onChange={handleIDCardChange}
+                      pattern="[0-9]{10}"
+                      title="Phone number must be 10 digits"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="nationality">Nationality</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="nationality"
+                      name="nationality"
+                      value={idCardData.nationality}
+                      onChange={handleIDCardChange}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="dateOfBirth">Date of birth</label>
+                    <input
+                      type="date"
+                      className="form-control"
+                      id="dateOfBirth"
+                      name="dateOfBirth"
+                      value={idCardData.dateOfBirth}
+                      onChange={handleIDCardChange}
+                      required
+                    />
+                    {dateOfBirthError && <div className="text-danger">{dateOfBirthError}</div>}
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="identityCardNumber">Identity card number</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="identityCardNumber"
+                      name="identityCardNumber"
+                      value={idCardData.identityCardNumber}
+                      onChange={handleIDCardChange}
+                      pattern="[0-9]{10}"
+                      title="Identity card number must be 10 digits"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="permanentAddress">Permanent address</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="permanentAddress"
+                      name="permanentAddress"
+                      value={idCardData.permanentAddress}
+                      onChange={handleIDCardChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="eyeColor">Eye color</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="eyeColor"
+                      name="eyeColor"
+                      value={idCardData.eyeColor}
+                      onChange={handleIDCardChange}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="height">Height(cm)</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="height"
+                      name="height"
+                      value={idCardData.height}
+                      onChange={handleIDCardChange}
+                      required
+                    />
+                    {heightError && <div className="text-danger">{heightError}</div>}
+                  </div>
 
-      {loadingData ? (
-        <p className="text-center my-5">Loading...</p>
-      ) : hasUserIdentity ? (
-        <div className="mt-5">
-          {Object.keys(userIdentity).length > 0 ? (
-            <div className="row">
-              <div className="col-4">
-                <img className="img-fluid" src={userIdentity.imageUrl} alt="" />
+                  <div className="form-group">
+                    <label htmlFor="dateOfIssue">Date of issue</label>
+                    <input
+                      type="date"
+                      className="form-control"
+                      id="dateOfIssue"
+                      name="dateOfIssue"
+                      value={idCardData.dateOfIssue}
+                      onChange={handleIDCardChange}
+                      required
+                    />
+                  </div>
+                </form>
+
+                <Button
+                  loading={loadingButton}
+                  onClick={handleFormSubmit}
+                  className="btn btn-primary"
+                >
+                  Create
+                </Button>
               </div>
-              <div className="col-8">
-                <h2>{userIdentity.name}</h2>
-                <p>{userIdentity.egn}</p>
-                {idcardPending ? <p>Your ID card is pending approval from the admin.</p> : null}
-              </div>
-            </div>
-          ) : null}
-          <form onSubmit={handleFormSubmit}>
-            <div className="form-group mt-5">
-              <label htmlFor="phoneNumber">Phone number</label>
-              <input
-                type="text"
-                className="form-control"
-                id="phoneNumber"
-                name="phoneNumber"
-                value={idCardData.phoneNumber}
-                onChange={handleIDCardChange}
-                pattern="[0-9]{10}"
-                title="Phone number must be 10 digits"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="nationality">Nationality</label>
-              <input
-                type="text"
-                className="form-control"
-                id="nationality"
-                name="nationality"
-                value={idCardData.nationality}
-                onChange={handleIDCardChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="dateOfBirth">Date of birth</label>
-              <input
-                type="date"
-                className="form-control"
-                id="dateOfBirth"
-                name="dateOfBirth"
-                value={idCardData.dateOfBirth}
-                onChange={handleIDCardChange}
-                required
-              />
-              {dateOfBirthError && <div className="text-danger">{dateOfBirthError}</div>}
-            </div>
-            <div className="form-group">
-              <label htmlFor="identityCardNumber">Identity card number</label>
-              <input
-                type="text"
-                className="form-control"
-                id="identityCardNumber"
-                name="identityCardNumber"
-                value={idCardData.identityCardNumber}
-                onChange={handleIDCardChange}
-                pattern="[0-9]{10}"
-                title="Identity card number must be 10 digits"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="permanentAddress">Permanent address</label>
-              <input
-                type="text"
-                className="form-control"
-                id="permanentAddress"
-                name="permanentAddress"
-                value={idCardData.permanentAddress}
-                onChange={handleIDCardChange}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="eyeColor">Eye color</label>
-              <input
-                type="text"
-                className="form-control"
-                id="eyeColor"
-                name="eyeColor"
-                value={idCardData.eyeColor}
-                onChange={handleIDCardChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="height">Height(cm)</label>
-              <input
-                type="text"
-                className="form-control"
-                id="height"
-                name="height"
-                value={idCardData.height}
-                onChange={handleIDCardChange}
-                required
-              />
-              {heightError && <div className="text-danger">{heightError}</div>}
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="dateOfIssue">Date of issue</label>
-              <input
-                type="date"
-                className="form-control"
-                id="dateOfIssue"
-                name="dateOfIssue"
-                value={idCardData.dateOfIssue}
-                onChange={handleIDCardChange}
-                required
-              />
-            </div>
-          </form>
-
-          <Button loading={loadingButton} onClick={handleFormSubmit} className="btn btn-primary">
-            Create
-          </Button>
+            ) : (
+              <div className="alert alert-warnoing">Please create identity first</div>
+            )}
+          </div>
         </div>
-      ) : (
-        <div className="alert alert-warnoing">Please create identity first</div>
-      )}
+      </div>
     </div>
   );
 };
+
 export default IDcard;

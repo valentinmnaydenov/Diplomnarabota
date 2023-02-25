@@ -1,24 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Button from '../components/ui/Button';
-import { useCallback } from 'react';
 
 const IDcard = ({ sdk }) => {
   const [loadingData, setLoadingData] = useState(true);
   const [loadingButton, setLoadingButton] = useState(false);
   const [hasUserIdentity, setHasUserIdentity] = useState(false);
+  const [userIdentity, setUserIdentity] = useState({});
+  const [idcardPending, setidcardPending] = useState(false);
+  const [identityID, setidentityID] = useState('');
+
   const [phoneNumberError, setPhoneNumberError] = useState(null);
   const [dateOfBirthError, setDateOfBirthError] = useState(null);
   const [identityCardNumberError, setIdentityCardNumberError] = useState(null);
   const [addressError, setAddressError] = useState(null);
   const [dateOfIssueError, setDateOfIssueError] = useState(null);
-  const [height, setHeight] = useState('');
-  const [eyeColor, seteyeColor] = useState('');
   const [heightError, setHeightError] = useState('');
-  const [userIdentity, setUserIdentity] = useState({});
-  const [identityID, setidentityID] = useState('');
-  const [idcardPending, setidcardPending] = useState(false);
-  const [loadingCards, setLoadingCards] = useState(true);
-  const [balance, setBalance] = useState(0);
 
   const [idCardData, setIdCardData] = useState({
     id: '',
@@ -33,7 +29,7 @@ const IDcard = ({ sdk }) => {
     status: 'pending',
   });
 
-  const handleIDCardChange = e => {
+  const handleInputChange = e => {
     setIdCardData({ ...idCardData, [e.target.name]: e.target.value });
   };
 
@@ -71,18 +67,12 @@ const IDcard = ({ sdk }) => {
   };
 
   const handleFormSubmit = async () => {
-    if (!sdk) {
-      console.log('sdk object is undefined. Aborting createIdcard call.');
-      return;
-    }
-
     try {
       setLoadingButton(true);
 
       // if (validateForm()) {
       console.log('Calling createIDCard...');
       const dateOfBirth = new Date(idCardData.dateOfBirth);
-      console.log(typeof dateOfBirth);
       await sdk.createIDCard(
         identityID,
         idCardData.phoneNumber,
@@ -94,7 +84,8 @@ const IDcard = ({ sdk }) => {
         idCardData.height,
         new Date(idCardData.dateOfIssue).getTime(),
       );
-      console.log('createIDCard call completed.');
+
+      await getIdCardData();
       // }
     } catch (e) {
       console.log('Error:', e);
@@ -106,11 +97,7 @@ const IDcard = ({ sdk }) => {
   };
 
   const getIdCardData = useCallback(async () => {
-    if (!sdk) {
-      console.log('SDK is not available');
-      return;
-    }
-    setLoadingCards(true);
+    setLoadingData(true);
 
     const idcardids = await sdk.getIDCardsIds();
 
@@ -119,17 +106,17 @@ const IDcard = ({ sdk }) => {
       const idcards = await Promise.all(idcardPromises);
 
       const foundIdCard =
-        idcards.find(idcard => idcard.user === sdk.currentUser && idcard.status === 1) || {};
+        idcards.find(idcard => idcard.identityID === Number(identityID) && idcard.status === 1) ||
+        {};
 
       setidcardPending(Object.keys(foundIdCard).length > 0);
     }
 
-    setLoadingCards(false);
-  }, [sdk]);
+    setLoadingData(false);
+  }, [sdk, identityID]);
 
   useEffect(() => {
     const checkBalance = async () => {
-      console.log('checkBalance called');
       try {
         const balance = await sdk.docItemContract.balanceOf(sdk.currentUser);
         setHasUserIdentity(Number(balance.toString()) > 0);
@@ -154,27 +141,21 @@ const IDcard = ({ sdk }) => {
   }, [sdk]);
 
   useEffect(() => {
-    console.log('useEffect called');
     sdk && getIdCardData();
   }, [sdk, getIdCardData]);
-
-  const userHasMinted = balance > 0;
 
   return (
     <div className="container my-5 py-6">
       <div className="row">
         <div className="col-6 offset-3">
-          {loadingData ? <p className="text-center">Loading...</p> : <></>}
-          <div className="container my-5 py-6">
-            <h1>Create your ID card</h1>
-            {userHasMinted ? (
-              <p className="alert alert-info my-6">User has an identity</p>
-            ) : idcardPending ? (
+          <h1>Create your ID card</h1>
+
+          {loadingData ? (
+            <p className="text-center my-5">Loading...</p>
+          ) : hasUserIdentity ? (
+            idcardPending ? (
               <p className="alert alert-info my-6">Wait for the Admin to approve</p>
-            ) : null}
-            {loadingData ? (
-              <p className="text-center my-5">Loading...</p>
-            ) : hasUserIdentity ? (
+            ) : (
               <div className="mt-5">
                 {Object.keys(userIdentity).length > 0 ? (
                   <div className="row">
@@ -190,6 +171,7 @@ const IDcard = ({ sdk }) => {
                     </div>
                   </div>
                 ) : null}
+                <hr className="my-4" />
                 <form onSubmit={handleFormSubmit}>
                   <div className="form-group mt-5">
                     <label htmlFor="phoneNumber">Phone number</label>
@@ -199,13 +181,14 @@ const IDcard = ({ sdk }) => {
                       id="phoneNumber"
                       name="phoneNumber"
                       value={idCardData.phoneNumber}
-                      onChange={handleIDCardChange}
+                      onChange={handleInputChange}
                       pattern="[0-9]{10}"
                       title="Phone number must be 10 digits"
                       required
                     />
                   </div>
-                  <div className="form-group">
+
+                  <div className="form-group mt-4">
                     <label htmlFor="nationality">Nationality</label>
                     <input
                       type="text"
@@ -213,11 +196,12 @@ const IDcard = ({ sdk }) => {
                       id="nationality"
                       name="nationality"
                       value={idCardData.nationality}
-                      onChange={handleIDCardChange}
+                      onChange={handleInputChange}
                       required
                     />
                   </div>
-                  <div className="form-group">
+
+                  <div className="form-group mt-4">
                     <label htmlFor="dateOfBirth">Date of birth</label>
                     <input
                       type="date"
@@ -225,12 +209,13 @@ const IDcard = ({ sdk }) => {
                       id="dateOfBirth"
                       name="dateOfBirth"
                       value={idCardData.dateOfBirth}
-                      onChange={handleIDCardChange}
+                      onChange={handleInputChange}
                       required
                     />
                     {dateOfBirthError && <div className="text-danger">{dateOfBirthError}</div>}
                   </div>
-                  <div className="form-group">
+
+                  <div className="form-group mt-4">
                     <label htmlFor="identityCardNumber">Identity card number</label>
                     <input
                       type="text"
@@ -238,13 +223,14 @@ const IDcard = ({ sdk }) => {
                       id="identityCardNumber"
                       name="identityCardNumber"
                       value={idCardData.identityCardNumber}
-                      onChange={handleIDCardChange}
+                      onChange={handleInputChange}
                       pattern="[0-9]{10}"
                       title="Identity card number must be 10 digits"
                       required
                     />
                   </div>
-                  <div className="form-group">
+
+                  <div className="form-group mt-4">
                     <label htmlFor="permanentAddress">Permanent address</label>
                     <input
                       type="text"
@@ -252,10 +238,11 @@ const IDcard = ({ sdk }) => {
                       id="permanentAddress"
                       name="permanentAddress"
                       value={idCardData.permanentAddress}
-                      onChange={handleIDCardChange}
+                      onChange={handleInputChange}
                     />
                   </div>
-                  <div className="form-group">
+
+                  <div className="form-group mt-4">
                     <label htmlFor="eyeColor">Eye color</label>
                     <input
                       type="text"
@@ -263,11 +250,12 @@ const IDcard = ({ sdk }) => {
                       id="eyeColor"
                       name="eyeColor"
                       value={idCardData.eyeColor}
-                      onChange={handleIDCardChange}
+                      onChange={handleInputChange}
                       required
                     />
                   </div>
-                  <div className="form-group">
+
+                  <div className="form-group mt-4">
                     <label htmlFor="height">Height(cm)</label>
                     <input
                       type="text"
@@ -275,13 +263,13 @@ const IDcard = ({ sdk }) => {
                       id="height"
                       name="height"
                       value={idCardData.height}
-                      onChange={handleIDCardChange}
+                      onChange={handleInputChange}
                       required
                     />
                     {heightError && <div className="text-danger">{heightError}</div>}
                   </div>
 
-                  <div className="form-group">
+                  <div className="form-group mt-4">
                     <label htmlFor="dateOfIssue">Date of issue</label>
                     <input
                       type="date"
@@ -289,24 +277,22 @@ const IDcard = ({ sdk }) => {
                       id="dateOfIssue"
                       name="dateOfIssue"
                       value={idCardData.dateOfIssue}
-                      onChange={handleIDCardChange}
+                      onChange={handleInputChange}
                       required
                     />
                   </div>
                 </form>
 
-                <Button
-                  loading={loadingButton}
-                  onClick={handleFormSubmit}
-                  className="btn btn-primary"
-                >
-                  Create
-                </Button>
+                <div className="text-center mt-4">
+                  <Button loading={loadingButton} onClick={handleFormSubmit}>
+                    Create
+                  </Button>
+                </div>
               </div>
-            ) : (
-              <div className="alert alert-warnoing">Please create identity first</div>
-            )}
-          </div>
+            )
+          ) : (
+            <div className="alert alert-info my-5">Please create identity first</div>
+          )}
         </div>
       </div>
     </div>

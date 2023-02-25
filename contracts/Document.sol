@@ -71,9 +71,6 @@ contract Document is ReentrancyGuard {
   mapping(uint256 => IDCardData) public idCards;
   mapping(uint256 => bool) public inUseIdentityCardNumber;
   uint256 public cardCount = 0;
-  // mapping(uint256 => bool) public applicationFormsExist;
-  // mapping(uint256 => address) public formCreators;
-  // mapping(address => bool) public filledForms;
 
   uint256[] public applicationFormsIds;
   uint256[] public idCardsIds;

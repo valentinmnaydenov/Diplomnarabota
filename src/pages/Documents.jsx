@@ -3,22 +3,25 @@ import Button from '../components/ui/Button';
 
 const Documents = ({ sdk }) => {
   const [forms, setForms] = useState([]);
-  const [loadingForms, setLoadingForms] = useState(false);
+  const [loadingForms, setLoadingForms] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
 
   const getApplicationForms = useCallback(async () => {
-    if (!sdk) return;
-
     setLoadingForms(true);
 
     const formIds = await sdk.getApplicationFormsIds();
 
     // Check if there are some forms
     if (formIds.length > 0) {
-      const formPromises = formIds.map(formId => sdk.getApplicationFormData(formId));
-      const forms = await Promise.all(formPromises);
-
-      setForms(forms);
+      try {
+        const formPromises = formIds.map(formId => sdk.getApplicationFormData(formId));
+        const forms = await Promise.all(formPromises);
+        setForms(forms);
+      } catch (e) {
+        console.log('Error on getting metdata', e);
+      } finally {
+        setLoadingForms(false);
+      }
     }
 
     setLoadingForms(false);

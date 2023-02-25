@@ -113,7 +113,7 @@ const IDcard = ({ sdk }) => {
     }
 
     setLoadingData(false);
-  }, [sdk]);
+  }, [sdk, identityID]);
 
   useEffect(() => {
     const checkBalance = async () => {

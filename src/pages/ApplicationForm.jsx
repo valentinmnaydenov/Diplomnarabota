@@ -108,8 +108,6 @@ const ApplicationForm = ({ sdk }) => {
   };
 
   const getApplicationForms = useCallback(async () => {
-    if (!sdk) return;
-
     setLoadingForms(true);
 
     const formIds = await sdk.getApplicationFormsIds();

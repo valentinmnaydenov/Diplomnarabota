@@ -5,13 +5,8 @@ const IDCardAdmin = ({ sdk }) => {
   const [idCards, setIdCards] = useState([]);
   const [loadingIdCards, setLoadingIdCards] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [userIdentity, setUserIdentity] = useState({});
-  const [identityID, setidentityID] = useState('');
-  const [metadataAvailable, setMetadataAvailable] = useState(false);
 
   const getIDCards = useCallback(async () => {
-    if (!sdk) return;
-
     setLoadingIdCards(true);
 
     const idCardIds = await sdk.getIDCardsIds();
@@ -22,11 +17,8 @@ const IDCardAdmin = ({ sdk }) => {
         let metadata = {};
 
         try {
-          const tokenId = await sdk.docItemContract.tokenOfOwnerByIndex(sdk.currentUser, 0);
-          const tokenURI = await sdk.docItemContract.tokenURI(tokenId);
+          const tokenURI = await sdk.docItemContract.tokenURI(idCard.identityID);
           metadata = await sdk.getTokenMetadataByURI(tokenURI);
-          setMetadataAvailable(true);
-          setidentityID(tokenId);
         } catch (error) {
           console.log(error);
         } finally {
@@ -44,7 +36,7 @@ const IDCardAdmin = ({ sdk }) => {
     }
 
     setLoadingIdCards(false);
-  }, [sdk, metadataAvailable]);
+  }, [sdk]);
 
   useEffect(() => {
     sdk && getIDCards();
@@ -88,7 +80,7 @@ const IDCardAdmin = ({ sdk }) => {
               <th>Name</th>
               <th>EGN</th>
               <th>Photo</th>
-              <th>Phone umber</th>
+              <th>Phone Number</th>
               <th>Status</th>
               <th>Nationality</th>
               <th>DateofBirth</th>
@@ -107,11 +99,7 @@ const IDCardAdmin = ({ sdk }) => {
                   <td>{idCard.name || '-'}</td>
                   <td>{idCard.egn || '-'}</td>
                   <td>
-                    {console.log(idCard.imageUrl) ? (
-                      <img src={idCard.imageUrl} alt="ID card photo" width="100" />
-                    ) : (
-                      '-'
-                    )}
+                    <img src={idCard.imageUrl} alt="" width="100" />
                   </td>
                   <td>{idCard.phoneNumber}</td>
                   <td>{statusArray[idCard.status]}</td>

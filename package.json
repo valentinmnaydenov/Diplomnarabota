@@ -5,7 +5,9 @@
   "scripts": {
     "build": "react-scripts build",
     "eject": "react-scripts eject",
-    "start": "react-scripts start"
+    "start": "react-scripts start",
+    "deployDocItem": "npx hardhat run scripts/deployDocItem.js --network sepolia",
+    "deployDocumnt": "npx hardhat run scripts/deployDocument.js --network sepolia"
   },
   "browserslist": {
     "production": [

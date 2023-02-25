@@ -125,7 +125,6 @@ class SDK {
     height,
     dateOfIssue,
   ) {
-    console.log(identityID, phoneNumber, nationality, dateOfBirth, identityCardNumber);
     const tx = await this.documentContract.createIDCard(
       identityID,
       phoneNumber,
@@ -177,6 +176,7 @@ class SDK {
       height: applicationIdcardRaw.height,
       dateOfIssue: applicationIdcardRaw.dateOfIssue,
       status: applicationIdcardRaw.status,
+      identityID: Number(applicationIdcardRaw.identityID.toString()),
     };
 
     return {

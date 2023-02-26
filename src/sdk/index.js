@@ -125,6 +125,7 @@ class SDK {
     eyeColor,
     height,
     dateOfIssue,
+    dateOfExpired,
   ) {
     const tx = await this.documentContract.createIDCard(
       identityID,
@@ -136,6 +137,7 @@ class SDK {
       eyeColor,
       height,
       dateOfIssue,
+      dateOfExpired,
       { from: this.defaultAccount },
     );
     await tx.wait();
@@ -176,6 +178,7 @@ class SDK {
       eyeColor: applicationIdcardRaw.eyeColor,
       height: applicationIdcardRaw.height,
       dateOfIssue: applicationIdcardRaw.dateOfIssue,
+      dateOfExpired: applicationIdcardRaw.dateOfExpired,
       status: applicationIdcardRaw.status,
       identityID: Number(applicationIdcardRaw.identityID.toString()),
     };

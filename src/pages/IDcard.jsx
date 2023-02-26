@@ -16,6 +16,7 @@ const IDcard = ({ sdk }) => {
   const [dateOfIssueError, setDateOfIssueError] = useState(null);
   const [eyeError, setEyeError] = useState(null);
   const [heightError, setHeightError] = useState('');
+  const [dateOfExpired, setDateOfExpiredError] = useState(null);
 
   const [idCardData, setIdCardData] = useState({
     id: '',
@@ -27,6 +28,7 @@ const IDcard = ({ sdk }) => {
     eyeColor: '',
     height: '',
     dateOfIssue: '',
+    dateOfExpired: '',
     status: 'pending',
   });
 
@@ -105,6 +107,13 @@ const IDcard = ({ sdk }) => {
     } else {
       setEyeError(null);
     }
+    const expirationDate = new Date(idCardData.dateOfExpired);
+    if (expirationDate <= today) {
+      setDateOfExpiredError('Date of expiration must be in the future');
+      valid = false;
+    } else {
+      setDateOfExpiredError(null);
+    }
 
     return valid;
   };
@@ -126,6 +135,7 @@ const IDcard = ({ sdk }) => {
           idCardData.eyeColor,
           idCardData.height,
           new Date(idCardData.dateOfIssue).getTime(),
+          new Date(idCardData.dateOfExpired).getTime(),
         );
 
         await getIdCardData();
@@ -331,6 +341,19 @@ const IDcard = ({ sdk }) => {
                       required
                     />
                     {dateOfIssueError && <div className="text-danger">{dateOfIssueError}</div>}
+                  </div>
+                  <div className="form-group mt-4">
+                    <label htmlFor="dateOfExpiration">Date of expiration</label>
+                    <input
+                      type="date"
+                      className="form-control"
+                      id="dateOfExpiration"
+                      name="dateOfExpiration"
+                      value={idCardData.dateOfExpired}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    {dateOfExpired && <div className="text-danger">{dateOfExpired}</div>}
                   </div>
                 </form>
 

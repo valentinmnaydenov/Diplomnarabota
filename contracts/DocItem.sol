@@ -24,6 +24,7 @@ contract DocItem is ERC721, ERC721Enumerable, ERC721URIStorage {
 
   // The following functions are overrides required by Solidity.
   //
+  //
   function _beforeTokenTransfer(
     address from,
     address to,

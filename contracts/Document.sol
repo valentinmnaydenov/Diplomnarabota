@@ -49,6 +49,7 @@ contract Document is ReentrancyGuard {
     string eyeColor;
     string height;
     uint256 dateOfIssue;
+    uint256 dateOfExpired;
     Status status;
   }
 
@@ -148,7 +149,8 @@ contract Document is ReentrancyGuard {
     string memory permanentAddress,
     string memory eyeColor,
     string memory height,
-    uint256 dateOfIssue
+    uint256 dateOfIssue,
+    uint256 dateOfExpired
   ) public {
     require(!inUseIdentityCardNumber[identityCardNumber], 'Identity card number is already in use');
 
@@ -168,6 +170,7 @@ contract Document is ReentrancyGuard {
       eyeColor: eyeColor,
       height: height,
       dateOfIssue: dateOfIssue,
+      dateOfExpired: dateOfExpired,
       status: Status.Pending
     });
 

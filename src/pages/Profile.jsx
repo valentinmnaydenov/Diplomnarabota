@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-// import QRCode from 'react-qr-code';
+import QRCode from 'react-qr-code';
 
 const Profile = ({ sdk }) => {
   const [userIdentity, setUserIdentity] = useState({});
@@ -59,7 +59,7 @@ const Profile = ({ sdk }) => {
       {loadingIdCards ? (
         <p className="text-center">Loading...</p>
       ) : Object.keys(userIdentity).length > 0 ? (
-        <div className="row">
+        <div className="row border rounded p-4" style={{ border: '10px solid black' }}>
           <div className="col-4">
             <img className="img-fluid" src={userIdentity.imageUrl} alt="" />
           </div>
@@ -88,15 +88,16 @@ const Profile = ({ sdk }) => {
                     <p className="mb-2">
                       <span className="text-bold">Phone number:</span> {userIDCard.phoneNumber}
                     </p>
-                  </div>
-
-                  <div className="col-6">
                     <p className="mb-2">
                       <span className="text-bold">Eye color:</span> {userIDCard.eyeColor}
                     </p>
                     <p className="mb-2">
                       <span className="text-bold">Height:</span> {userIDCard.height}
                     </p>
+                  </div>
+
+                  <div className="col-6">
+                    <QRCode value={`https://example.com/profile/${identityID}`} size={100} />
                   </div>
                 </div>
               </>
@@ -115,4 +116,5 @@ const Profile = ({ sdk }) => {
     </div>
   );
 };
+
 export default Profile;

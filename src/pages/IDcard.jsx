@@ -8,12 +8,13 @@ const IDcard = ({ sdk }) => {
   const [userIdentity, setUserIdentity] = useState({});
   const [idcardPending, setidcardPending] = useState(false);
   const [identityID, setidentityID] = useState('');
-
+  const [nationalityError, setNationalityError] = useState(null);
   const [phoneNumberError, setPhoneNumberError] = useState(null);
   const [dateOfBirthError, setDateOfBirthError] = useState(null);
   const [identityCardNumberError, setIdentityCardNumberError] = useState(null);
   const [addressError, setAddressError] = useState(null);
   const [dateOfIssueError, setDateOfIssueError] = useState(null);
+  const [eyeError, setEyeError] = useState(null);
   const [heightError, setHeightError] = useState('');
 
   const [idCardData, setIdCardData] = useState({
@@ -34,59 +35,101 @@ const IDcard = ({ sdk }) => {
   };
 
   const validateForm = () => {
-    let hasError = false;
-    if (!/^\d{10}$/.test(idCardData.phoneNumber)) {
-      setPhoneNumberError('Phone number must be 10 digits');
-      hasError = true;
+    let valid = true;
+
+    // Validate phone number
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(idCardData.phoneNumber)) {
+      setPhoneNumberError('Invalid phone number');
+      valid = false;
     } else {
       setPhoneNumberError(null);
     }
 
-    if (!/^\d{9}$/.test(idCardData.identityCardNumber)) {
-      setIdentityCardNumberError('Identity card number must be 9 digits');
-      hasError = true;
+    // Validate date of birth
+    const dob = new Date(idCardData.dateOfBirth);
+    const today = new Date();
+    const age = today.getFullYear() - dob.getFullYear();
+    if (age < 18) {
+      setDateOfBirthError('You must be at least 18 years old');
+      valid = false;
+    } else {
+      setDateOfBirthError(null);
+    }
+
+    // Validate identity card number
+    const idRegex = /^[A-Z]{2}\d{6}$/;
+    if (!idRegex.test(idCardData.identityCardNumber)) {
+      setIdentityCardNumberError('Invalid identity card number');
+      valid = false;
     } else {
       setIdentityCardNumberError(null);
     }
 
-    if (!/^\w+\s+\w+,\s+\d+$/.test(idCardData.permanentAddress)) {
-      setAddressError('Address must be in the format "Street Name, Town, Postal Code"');
-      hasError = true;
+    // Validate address
+    if (!idCardData.permanentAddress) {
+      setAddressError('Address is required');
+      valid = false;
     } else {
       setAddressError(null);
     }
 
-    if (!/^\d{2}-\d{2}-\d{4}$/.test(idCardData.dateOfIssue)) {
-      setDateOfIssueError('Date of birth must be in the format DD-MM-YYYY');
-      hasError = true;
+    // Validate date of issue
+    const doi = new Date(idCardData.dateOfIssue);
+    if (doi > today) {
+      setDateOfIssueError('Invalid date of issue');
+      valid = false;
     } else {
       setDateOfIssueError(null);
     }
 
-    return !hasError;
+    // Validate height
+    if (!idCardData.height) {
+      setHeightError('Height is required');
+      valid = false;
+    } else {
+      setHeightError(null);
+    }
+    // Validate nationality
+    if (!idCardData.nationality) {
+      setNationalityError('Nationality is required');
+      valid = false;
+    } else {
+      setNationalityError(null);
+    }
+
+    // Validate eye color
+    if (!idCardData.eyeColor) {
+      setEyeError('Eye color is required');
+      valid = false;
+    } else {
+      setEyeError(null);
+    }
+
+    return valid;
   };
 
   const handleFormSubmit = async () => {
     try {
       setLoadingButton(true);
 
-      // if (validateForm()) {
-      console.log('Calling createIDCard...');
-      const dateOfBirth = new Date(idCardData.dateOfBirth);
-      await sdk.createIDCard(
-        identityID,
-        idCardData.phoneNumber,
-        idCardData.nationality,
-        dateOfBirth.getTime(),
-        idCardData.identityCardNumber,
-        idCardData.permanentAddress,
-        idCardData.eyeColor,
-        idCardData.height,
-        new Date(idCardData.dateOfIssue).getTime(),
-      );
+      if (validateForm()) {
+        console.log('Calling createIDCard...');
+        const dateOfBirth = new Date(idCardData.dateOfBirth);
+        await sdk.createIDCard(
+          identityID,
+          idCardData.phoneNumber,
+          idCardData.nationality,
+          dateOfBirth.getTime(),
+          idCardData.identityCardNumber,
+          idCardData.permanentAddress,
+          idCardData.eyeColor,
+          idCardData.height,
+          new Date(idCardData.dateOfIssue).getTime(),
+        );
 
-      await getIdCardData();
-      // }
+        await getIdCardData();
+      }
     } catch (e) {
       console.log('Error:', e);
     } finally {
@@ -186,6 +229,7 @@ const IDcard = ({ sdk }) => {
                       title="Phone number must be 10 digits"
                       required
                     />
+                    {phoneNumberError && <span className="text-danger">{phoneNumberError}</span>}
                   </div>
 
                   <div className="form-group mt-4">
@@ -199,6 +243,7 @@ const IDcard = ({ sdk }) => {
                       onChange={handleInputChange}
                       required
                     />
+                    {nationalityError && <div className="text-danger">{nationalityError}</div>}
                   </div>
 
                   <div className="form-group mt-4">
@@ -228,6 +273,9 @@ const IDcard = ({ sdk }) => {
                       title="Identity card number must be 10 digits"
                       required
                     />
+                    {identityCardNumberError && (
+                      <span className="text-danger">{identityCardNumberError}</span>
+                    )}
                   </div>
 
                   <div className="form-group mt-4">
@@ -240,6 +288,7 @@ const IDcard = ({ sdk }) => {
                       value={idCardData.permanentAddress}
                       onChange={handleInputChange}
                     />
+                    {addressError && <span className="text-danger">{addressError}</span>}
                   </div>
 
                   <div className="form-group mt-4">
@@ -253,6 +302,7 @@ const IDcard = ({ sdk }) => {
                       onChange={handleInputChange}
                       required
                     />
+                    {eyeError && <div className="text-danger">{eyeError}</div>}
                   </div>
 
                   <div className="form-group mt-4">
@@ -280,6 +330,7 @@ const IDcard = ({ sdk }) => {
                       onChange={handleInputChange}
                       required
                     />
+                    {dateOfIssueError && <div className="text-danger">{dateOfIssueError}</div>}
                   </div>
                 </form>
 

@@ -16,8 +16,7 @@ const IDcard = ({ sdk }) => {
   const [dateOfIssueError, setDateOfIssueError] = useState(null);
   const [eyeError, setEyeError] = useState(null);
   const [heightError, setHeightError] = useState('');
-  const [dateOfExpired, setDateOfExpiredError] = useState(null);
-
+  const [dateOfExpiredError, setDateOfExpiredError] = useState(null);
   const [idCardData, setIdCardData] = useState({
     id: '',
     phoneNumber: '',
@@ -107,8 +106,9 @@ const IDcard = ({ sdk }) => {
     } else {
       setEyeError(null);
     }
-    const expirationDate = new Date(idCardData.dateOfExpired);
-    if (expirationDate <= today) {
+
+    const expDate = new Date(idCardData.dateOfExpired);
+    if (expDate <= today) {
       setDateOfExpiredError('Date of expiration must be in the future');
       valid = false;
     } else {
@@ -125,6 +125,7 @@ const IDcard = ({ sdk }) => {
       if (validateForm()) {
         console.log('Calling createIDCard...');
         const dateOfBirth = new Date(idCardData.dateOfBirth);
+        const dateOfExpired = new Date(idCardData.dateOfExpired);
         await sdk.createIDCard(
           identityID,
           idCardData.phoneNumber,
@@ -135,7 +136,7 @@ const IDcard = ({ sdk }) => {
           idCardData.eyeColor,
           idCardData.height,
           new Date(idCardData.dateOfIssue).getTime(),
-          new Date(idCardData.dateOfExpired).getTime(),
+          dateOfExpired.getTime(),
         );
 
         await getIdCardData();
@@ -353,7 +354,7 @@ const IDcard = ({ sdk }) => {
                       onChange={handleInputChange}
                       required
                     />
-                    {dateOfExpired && <div className="text-danger">{dateOfExpired}</div>}
+                    {dateOfExpiredError && <div className="text-danger">{dateOfExpiredError}</div>}
                   </div>
                 </form>
 

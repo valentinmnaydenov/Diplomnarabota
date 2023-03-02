@@ -4,18 +4,13 @@ pragma solidity ^0.8.9;
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/utils/Counters.sol';
 import './DocItem.sol';
+import '@openzeppelin/contracts/access/Ownable.sol';
 
-contract Document is ReentrancyGuard {
+contract Document is ReentrancyGuard, Ownable {
   using Counters for Counters.Counter;
-  address payable public owner;
   DocItem private immutable docItemContract;
   uint256 public applicationFormCounter = 0;
   uint256 public idCardCounter = 0;
-
-  enum Role {
-    Admin,
-    User
-  }
 
   enum Status {
     Approved,
@@ -55,19 +50,11 @@ contract Document is ReentrancyGuard {
 
   constructor(address _docItemAddress) {
     docItemContract = DocItem(_docItemAddress);
-    roles[msg.sender] = Role.Admin;
-  }
-
-  modifier onlyOwner() {
-    require(msg.sender == owner, 'Only the owner can perform this action');
-    _;
   }
 
   mapping(uint256 => ApplicationForm) public applicationForms;
   mapping(uint256 => Status) public applicationStatus;
   mapping(uint256 => bool) public nfts;
-  mapping(address => Role) public roles;
-  mapping(address => bool) public theroles;
   mapping(uint256 => bool) public inUseEgn;
   mapping(uint256 => IDCardData) public idCards;
   mapping(uint256 => bool) public inUseIdentityCardNumber;
@@ -113,8 +100,7 @@ contract Document is ReentrancyGuard {
     return applicationFormsIds.length;
   }
 
-  function approveApplication(uint256 newFormId) public {
-    require(roles[msg.sender] == Role.Admin, 'Only admins can approve applications');
+  function approveApplication(uint256 newFormId) public onlyOwner {
     require(applicationForms[newFormId].status == Status.Pending, 'Invalid status');
     require(
       docItemContract.balanceOf(applicationForms[newFormId].user) == 0,
@@ -131,8 +117,7 @@ contract Document is ReentrancyGuard {
     emit Approved(newFormId);
   }
 
-  function rejectApplication(uint256 newFormId) public {
-    require(roles[msg.sender] == Role.Admin, 'Only admins can reject applications');
+  function rejectApplication(uint256 newFormId) public onlyOwner {
     require(applicationForms[newFormId].status == Status.Pending, 'Invalid status');
     applicationForms[newFormId].status = Status.Rejected;
     emit Rejected(newFormId);
@@ -185,8 +170,7 @@ contract Document is ReentrancyGuard {
     return idCardsIds.length;
   }
 
-  function approveIDCard(uint256 newCardId) public {
-    require(roles[msg.sender] == Role.Admin, 'Only admins can approve ID cards');
+  function approveIDCard(uint256 newCardId) public onlyOwner {
     require(idCards[newCardId].status == Status.Pending, 'Invalid status');
 
     idCards[newCardId].status = Status.Approved;
@@ -194,8 +178,7 @@ contract Document is ReentrancyGuard {
     emit Approved(newCardId);
   }
 
-  function rejectIDCard(uint256 newCardId) public {
-    require(roles[msg.sender] == Role.Admin, 'Only admins can reject ID cards');
+  function rejectIDCard(uint256 newCardId) public onlyOwner {
     require(idCards[newCardId].status == Status.Pending, 'Invalid status');
     idCards[newCardId].status = Status.Rejected;
     emit Rejected(newCardId);

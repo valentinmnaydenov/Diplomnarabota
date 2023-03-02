@@ -32,6 +32,7 @@ const IDcard = ({ sdk }) => {
   });
 
   const handleInputChange = e => {
+    console.log(e.target.name);
     setIdCardData({ ...idCardData, [e.target.name]: e.target.value });
   };
 
@@ -59,21 +60,21 @@ const IDcard = ({ sdk }) => {
     }
 
     // Validate identity card number
-    const idRegex = /^[A-Z]{2}\d{6}$/;
-    if (!idRegex.test(idCardData.identityCardNumber)) {
-      setIdentityCardNumberError('Invalid identity card number');
-      valid = false;
-    } else {
-      setIdentityCardNumberError(null);
-    }
+    // const idRegex = /^[A-Z]{2}\d{6}$/;
+    // if (!idRegex.test(idCardData.identityCardNumber)) {
+    //   setIdentityCardNumberError('Invalid identity card number');
+    //   valid = false;
+    // } else {
+    //   setIdentityCardNumberError(null);
+    // }
 
-    // Validate address
-    if (!idCardData.permanentAddress) {
-      setAddressError('Address is required');
-      valid = false;
-    } else {
-      setAddressError(null);
-    }
+    // // Validate address
+    // if (!idCardData.permanentAddress) {
+    //   setAddressError('Address is required');
+    //   valid = false;
+    // } else {
+    //   setAddressError(null);
+    // }
 
     // Validate date of issue
     const doi = new Date(idCardData.dateOfIssue);
@@ -106,7 +107,7 @@ const IDcard = ({ sdk }) => {
     } else {
       setEyeError(null);
     }
-
+    console.log(idCardData.dateOfExpired);
     const expDate = new Date(idCardData.dateOfExpired);
     if (expDate <= today) {
       setDateOfExpiredError('Date of expiration must be in the future');
@@ -349,7 +350,7 @@ const IDcard = ({ sdk }) => {
                       type="date"
                       className="form-control"
                       id="dateOfExpiration"
-                      name="dateOfExpiration"
+                      name="dateOfExpired"
                       value={idCardData.dateOfExpired}
                       onChange={handleInputChange}
                       required

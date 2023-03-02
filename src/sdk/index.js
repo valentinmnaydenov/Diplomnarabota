@@ -211,6 +211,10 @@ class SDK {
 
     return nftIds;
   }
+  async getOwner() {
+    const owner = await this.documentContract.owner();
+    return owner;
+  }
 }
 
 export default SDK;

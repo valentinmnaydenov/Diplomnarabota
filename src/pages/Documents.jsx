@@ -29,8 +29,10 @@ const Documents = ({ sdk }) => {
   }, [sdk]);
 
   const getOwner = useCallback(async () => {
-    const ownerAddress = await sdk.getOwner();
-    setOwner(ownerAddress);
+    if (sdk) {
+      const ownerAddress = await sdk.getOwner();
+      setOwner(ownerAddress);
+    }
   }, [sdk]);
 
   useEffect(() => {
@@ -65,10 +67,11 @@ const Documents = ({ sdk }) => {
   const statusArray = ['Approved', 'Pending', 'Rejected'];
 
   return (
-    <>
+    <div className="container my-5 py-6">
       {sdk && owner === sdk.currentUser ? (
-        <div className="container my-5 py-6">
-          <h1 className="mb-6">Documents Page</h1>
+        <>
+          {' '}
+          <h1 className="mb-6">Identity Applications</h1>
           {loadingForms ? (
             <p className="text-center">Loading...</p>
           ) : (
@@ -123,9 +126,15 @@ const Documents = ({ sdk }) => {
               ) : null}
             </table>
           )}
+        </>
+      ) : (
+        <div className="row">
+          <div className="col-6 offset-3">
+            <div className="alert alert-warning text-center">Only admin can access this page</div>
+          </div>
         </div>
-      ) : null}
-    </>
+      )}
+    </div>
   );
 };
 export default Documents;

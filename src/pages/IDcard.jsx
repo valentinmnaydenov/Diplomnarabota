@@ -11,7 +11,6 @@ const IDcard = ({ sdk }) => {
   const [nationalityError, setNationalityError] = useState(null);
   const [phoneNumberError, setPhoneNumberError] = useState(null);
   const [dateOfBirthError, setDateOfBirthError] = useState(null);
-  const [identityCardNumberError, setIdentityCardNumberError] = useState(null);
   const [addressError, setAddressError] = useState(null);
   const [dateOfIssueError, setDateOfIssueError] = useState(null);
   const [eyeError, setEyeError] = useState(null);
@@ -32,7 +31,6 @@ const IDcard = ({ sdk }) => {
   });
 
   const handleInputChange = e => {
-    console.log(e.target.name);
     setIdCardData({ ...idCardData, [e.target.name]: e.target.value });
   };
 
@@ -68,13 +66,13 @@ const IDcard = ({ sdk }) => {
     //   setIdentityCardNumberError(null);
     // }
 
-    // // Validate address
-    // if (!idCardData.permanentAddress) {
-    //   setAddressError('Address is required');
-    //   valid = false;
-    // } else {
-    //   setAddressError(null);
-    // }
+    // Validate address
+    if (!idCardData.permanentAddress) {
+      setAddressError('Address is required');
+      valid = false;
+    } else {
+      setAddressError(null);
+    }
 
     // Validate date of issue
     const doi = new Date(idCardData.dateOfIssue);
@@ -285,9 +283,6 @@ const IDcard = ({ sdk }) => {
                       title="Identity card number must be 10 digits"
                       required
                     />
-                    {identityCardNumberError && (
-                      <span className="text-danger">{identityCardNumberError}</span>
-                    )}
                   </div>
 
                   <div className="form-group mt-4">

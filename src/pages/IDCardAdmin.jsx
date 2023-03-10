@@ -80,10 +80,10 @@ const IDCardAdmin = ({ sdk }) => {
   const statusArray = ['Approved', 'Pending', 'Rejected'];
 
   return (
-    <>
+    <div className="container my-5 py-6">
       {sdk && owner === sdk.currentUser ? (
-        <div className="container my-5 py-6">
-          <h1 className="mb-6">ID card Admin Page</h1>
+        <>
+          <h1 className="mb-6">ID card Applications</h1>
           {loadingIdCards ? (
             <p className="text-center">Loading...</p>
           ) : (
@@ -151,11 +151,15 @@ const IDCardAdmin = ({ sdk }) => {
               ) : null}
             </table>
           )}
-        </div>
+        </>
       ) : (
-        <p>You are not authorized to view this page.</p>
+        <div className="row">
+          <div className="col-6 offset-3">
+            <div className="alert alert-warning text-center">Only admin can access this page</div>
+          </div>
+        </div>
       )}
-    </>
+    </div>
   );
 };
 export default IDCardAdmin;

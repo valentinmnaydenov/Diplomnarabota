@@ -3,25 +3,23 @@ pragma solidity ^0.8.9;
 
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/utils/Counters.sol';
-import './DocItem.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
+import './DocItem.sol';
 
 contract Document is ReentrancyGuard, Ownable {
   using Counters for Counters.Counter;
+
   DocItem private immutable docItemContract;
   uint256 public applicationFormCounter = 0;
   uint256 public idCardCounter = 0;
+
+  uint256[] public applicationFormsIds;
+  uint256[] public idCardsIds;
 
   enum Status {
     Approved,
     Pending,
     Rejected
-  }
-
-  enum Typeofdoc {
-    ID,
-    PASSPORT,
-    CAR
   }
 
   struct ApplicationForm {
@@ -48,26 +46,22 @@ contract Document is ReentrancyGuard, Ownable {
     Status status;
   }
 
-  constructor(address _docItemAddress) {
-    docItemContract = DocItem(_docItemAddress);
-  }
-
   mapping(uint256 => ApplicationForm) public applicationForms;
   mapping(uint256 => Status) public applicationStatus;
   mapping(uint256 => bool) public nfts;
   mapping(uint256 => bool) public inUseEgn;
   mapping(uint256 => IDCardData) public idCards;
   mapping(uint256 => bool) public inUseIdentityCardNumber;
-  uint256 public cardCount = 0;
-
-  uint256[] public applicationFormsIds;
-  uint256[] public idCardsIds;
 
   event CreatedApplicationForm(uint256 idApplicationId, ApplicationForm applicationForm);
-
   event Approved(uint256 _applicationId);
   event Rejected(uint256 _applicationId);
   event Pending(uint256 _applicationId);
+  event CreatedIDCard(uint256 newCardId, IDCardData idcard);
+
+  constructor(address _docItemAddress) {
+    docItemContract = DocItem(_docItemAddress);
+  }
 
   function createApplicationForm(
     string memory name,
@@ -122,8 +116,6 @@ contract Document is ReentrancyGuard, Ownable {
     applicationForms[newFormId].status = Status.Rejected;
     emit Rejected(newFormId);
   }
-
-  event CreatedIDCard(uint256 newCardId, IDCardData idcard);
 
   function createIDCard(
     uint256 identityID,

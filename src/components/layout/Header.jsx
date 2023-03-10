@@ -14,21 +14,29 @@ function Header() {
               <Link className="link me-4" to="/" role="button">
                 Home
               </Link>
-              <Link className="link me-4" to="/documents" role="button">
-                Documents
+              <Link className="link me-4" to="/application-form" role="button">
+                Create identity
               </Link>
-              <Link className="link me-4" to="/idcard" role="button">
-                IDcard
+              <Link className="link" to="/idcard" role="button">
+                Apply for ID card
+              </Link>
+              <span className="mx-4">|</span>
+              <Link className="link me-4" to="/documents" role="button">
+                Identity Applications
               </Link>
               <Link className="link me-4" to="/idcardadmin" role="button">
-                IDCardAdmin
-              </Link>
-              <Link className="link me-4" to="/profile" role="button">
-                Profile
+                ID Card Applications
               </Link>
             </div>
 
-            <p>{provider ? <code>{provider.signerData.userAddress}</code> : 'Not connected'}</p>
+            <div className="d-flex">
+              <p>{provider ? <code>{provider.signerData.userAddress}</code> : 'Not connected'}</p>
+              {provider ? (
+                <Link className="link ms-4" to="/profile" role="button">
+                  My Profile
+                </Link>
+              ) : null}
+            </div>
           </div>
         </div>
       </div>

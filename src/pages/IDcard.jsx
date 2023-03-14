@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Button from '../components/ui/Button';
+import { Link } from 'react-router-dom';
 
 const IDcard = ({ sdk }) => {
   const [loadingData, setLoadingData] = useState(true);
@@ -362,7 +363,10 @@ const IDcard = ({ sdk }) => {
               </div>
             )
           ) : (
-            <div className="alert alert-info my-5">Please create identity first</div>
+            <div className="alert alert-info my-5">
+              Please create identity first
+              <Link to="/application-form"> here.</Link>
+            </div>
           )}
         </div>
       </div>
